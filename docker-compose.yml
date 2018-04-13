@@ -1,0 +1,33 @@
+version: '2'
+services:
+    mongo:
+        image: mongo:latest
+        environment:
+          - MONGO_DATA_DIR=/data/db
+          - MONGO_LOG_DIR=/dev/null
+        volumes:
+          - ./data/db:/data/db
+        ports:
+            - 27017:27017
+        command: mongod --smallfiles --logpath=/dev/null
+    api:
+        build: api
+        volumes:
+            - ./api:/usr/src/app
+        ports:
+            - "1337:1337"
+        depends_on:
+            - mongo
+    client:
+        image: nginx:alpine
+        volumes:
+            - ./client:/usr/share/nginx/html
+        ports:
+            - "80:80"
+        depends_on:
+            - api
+
+networks:
+    default:
+        driver: bridge
+
