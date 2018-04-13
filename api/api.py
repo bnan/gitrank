@@ -7,12 +7,13 @@ from pymongo import MongoClient
 app = Flask(__name__)
 CORS(app)
 
-#client = MongoClient('mongo', 27017)
-#db = client.test_database
-#tweets = db.tweets
+client = MongoClient('mongo', 27017)
+db = client.test_database
+comparisons = db.comparisons
 
-@app.route('/author/<username>/', methods=['GET'])
+@app.route('/author/<username1>/<username2>/', methods=['GET'])
 def author(username):
+
     return json.dumps({
         'followers': 0,
         'following': 0,
@@ -20,8 +21,16 @@ def author(username):
         'avatar': ''
     })
 
-@app.route('/repository/<name>/', methods=['GET'])
-def repository(name):
+@app.route('/repository/<name1>/<name2>/', methods=['GET'])
+def repository(name1, name2):
+    compA = {"repo_name":name1,
+             "compared_to":name2}
+    compB = {"repo_name":name2,
+             "compared_to":name1}
+
+    comp = comparisons.insert_one(compA)
+    comp = comparisons.insert_one(compB)
+
     return json.dumps({
         'stars': 0,
         'forks': 0,
