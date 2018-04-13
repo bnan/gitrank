@@ -3,7 +3,7 @@ import json
 
 
 url = 'https://api.github.com/graphql'
-api_token = 'abf45d6aab2ff86839f056e5a53efa787515ae28'
+api_token = 'a68f7ffae3ee31dd86209dcc5e56be49e9cd974a'
 headers = {'Authorization': f'token {api_token}'}
 
 def query(q):
@@ -20,17 +20,43 @@ def rank_following(following):
 
 if __name__ == '__main__':
     q = '''
-    {
-        user(login: "faviouz") {
-            followers(last: 20) {
-              edges {
-                node {
-                  login
-                  createdAt
-                }
-              }
+    query{
+        user(login: "faviouz"){
+            followers{
+                totalCount
             }
-        }
+            following {
+                totalCount
+            }
+            issues{
+              totalCount
+            }
+            organizations{
+              totalCount
+            }
+            pinnedRepositories{
+              totalCount
+            }
+            pullRequests{
+              totalCount
+            }
+            repositories(privacy: PUBLIC){
+              totalCount
+            }
+            repositoriesContributedTo(privacy: PUBLIC){
+              totalCount
+            }
+            starredRepositories{
+              totalCount
+            }
+            watching(privacy: PUBLIC){
+              totalCount
+            }
+            location
+            company
+            createdAt
+            avatarUrl
+          }
     }'''
 
     r = requests.post(url=url, json=query(q), headers=headers)
