@@ -289,7 +289,8 @@ def parse_repositories(data):
 def calc_user_rank(data):
 
     # List of weights each component has on the rank
-    weights = []
+    weights = [4/65, 2/65, 4/65, 4/65, 4/65, 5/65, 5/65, 5/65, 6/65, 7/65, 7/65, 2/65, 2/65, 1/65,
+            1/65, 3/65, 3/65]
     score = 0
 
     # followers                      | +
@@ -319,7 +320,8 @@ def calc_user_rank(data):
 def calc_repository_rank(data):
 
     # List of weights each component has on the rank
-    weights = []
+    weights = [ 4/102, 6/102, 6/102, 6/102, 5/102, 7/102, 6/102, 6/102, 6/102, 5/102, 5/102, 6/102,
+            6/102, 7/102, 4/102, 4/102, 4/102, 3/102, 3/102, 1/102, 2/102]
     score = 0
 
     # createdAt                     |
@@ -338,7 +340,7 @@ def calc_repository_rank(data):
     # pullMerged                    | +++
     # mileOpen                      |
     # mileClosed                    |
-    # languages                     | x
+    # languages                     |
     # description                   | -
     # hasWikiEnabled                | -
     # isArchived                    | ---
