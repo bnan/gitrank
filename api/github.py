@@ -109,7 +109,6 @@ def repository_rank(user1, repo1, user2, repo2):
           }
         }
         pushedAt
-        diskUsage
         deployments {
           totalCount
         }
@@ -144,6 +143,8 @@ def repository_rank(user1, repo1, user2, repo2):
             }
           }
         }
+        description
+        hasWikiEnabled
         isArchived
         isFork'''
 
@@ -228,7 +229,6 @@ def parse_repo_rank(data):
                           "totalCommits" :
                           data['repo1']['master']['commit']['history']['totalCount'],
                           "pushedAt" : data['repo1']['pushedAt'],
-                          "diskUsage" : data['repo1']['diskUsage'],
                           "deployments":  data['repo1']['deployments']['totalCount'],
                           "releases" :  data['repo1']['releases']['totalCount'],
                           "issuesOpen":  data['repo1']['issuesOpen']['totalCount'],
@@ -239,6 +239,8 @@ def parse_repo_rank(data):
                           "mileOpen": data['repo1']['mileOpen']['totalCount'],
                           "mileClosed": data['repo1']['mileClosed']['totalCount'],
                           "languages" : languages1,
+                          "description" : data['repo1']['description'] != None,
+                          "hasWikiEnabled" : data['repo1']['hasWikiEnabled'],
                           "isArchived" : data['repo1']['isArchived'],
                           "isFork" : data['repo1']['isFork']
                      },
@@ -252,7 +254,6 @@ def parse_repo_rank(data):
                           "totalCommits" :
                           data['repo2']['master']['commit']['history']['totalCount'],
                           "pushedAt" : data['repo2']['pushedAt'],
-                          "diskUsage" : data['repo2']['diskUsage'],
                           "deployments":  data['repo2']['deployments']['totalCount'],
                           "releases" :  data['repo2']['releases']['totalCount'],
                           "issuesOpen":  data['repo2']['issuesOpen']['totalCount'],
@@ -263,6 +264,8 @@ def parse_repo_rank(data):
                           "mileOpen": data['repo2']['mileOpen']['totalCount'],
                           "mileClosed": data['repo2']['mileClosed']['totalCount'],
                           "languages" : languages2,
+                          "description" : data['repo2']['description'] != None,
+                          "hasWikiEnabled" : data['repo2']['hasWikiEnabled'],
                           "isArchived" : data['repo2']['isArchived'],
                           "isFork" : data['repo2']['isFork']
                      }
