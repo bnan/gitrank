@@ -2,6 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 import json
 from pymongo import MongoClient
+from mongoloide import Mongoloide
 
 
 app = Flask(__name__)
@@ -9,10 +10,13 @@ CORS(app)
 
 #client = MongoClient('mongo', 27017)
 #db = client.test_database
-#tweets = db.tweets
+#comparisons = db.comparisons
 
-@app.route('/author/<username>/', methods=['GET'])
-def author(username):
+mongo = Mongoloide()
+
+@app.route('/author/<username1>/<username2>/', methods=['GET'])
+def author(username1, username2):
+    mongo.get_related(username1)
     return json.dumps({
         'followers': 0,
         'following': 0,
@@ -20,8 +24,9 @@ def author(username):
         'avatar': ''
     })
 
-@app.route('/repository/<name>/', methods=['GET'])
-def repository(name):
+@app.route('/repository/<name1>/<name2>/', methods=['GET'])
+def repository(name1, name2):
+    mongo.add_comparison(name1, name2)
     return json.dumps({
         'stars': 0,
         'forks': 0,
@@ -36,4 +41,3 @@ def repository(name):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=1337)
-
