@@ -77,4 +77,8 @@ class Mongoloide:
         return avg
 
 if __name__ == "__main__":
-    pass
+    try:
+        i = random.randint(0,len(comp['compared_to'])-1)
+        return comp['compared_to'][i]
+    except ValueError:
+        return []
