@@ -287,12 +287,7 @@ def parse_repositories(data):
 
 # Calculate User rank
 def calc_user_rank(data):
-
-    # List of weights each component has on the rank
-    weights = [4/65, 2/65, 4/65, 4/65, 4/65, 5/65, 5/65, 5/65, 6/65, 7/65, 7/65, 2/65, 2/65, 1/65,
-            1/65, 3/65, 3/65]
-    score = 0
-
+    # name                           | x
     # followers                      | +
     # following                      | -
     # issuesOpen                     | +
@@ -313,17 +308,54 @@ def calc_user_rank(data):
     # avatarUrl                      | x
     # score                          | x
 
+    # List of weights each component has on the rank
+    weights = [4/65, 2/65, 4/65, 4/65, 4/65, 5/65, 5/65, 5/65, 6/65, 7/65, 7/65, 2/65, 2/65, 1/65,
+            1/65, 3/65, 3/65]
+    score = 0
+    idx = -1
+
+    for field in data:
+        # Skip unwanted params
+        if field == "name":
+            continue
+        if field == "avatarUrl":
+            break;
+
+        param = None
+        # Parsing some of the params so that they can be used in the calc of the score
+        if field == "bio" or field == "company":
+            param = data[field] != ""
+        elif field == "location":
+            param = data[field] != None
+        else:
+            param = data[field]
+
+
+        idx = idx + 1 # increment to get the next weights array offset
+
+        # Depending on the type of variable the multiple params aftect the score in different ways
+        if type(param) == int:
+            if param == 0:
+                continue
+
+            par = math.log(param)
+
+            # Sigmoid func
+            val = math.exp(par) / (math.exp(par) + 1)
+
+            score = score + (weights[idx] * val)
+        elif type(param) == bool:
+            score = score + (weights[idx] if param else 0)
+        else: # Date - str
+            gitHubDate = 1202428800 # Unix Time Stamp of the date that GitHub was founded (8, Feb 2008)
+            score = score + 0
+
     return score
 
 
 # Calculate Repository rank
 def calc_repository_rank(data):
-
-    # List of weights each component has on the rank
-    weights = [ 4/102, 6/102, 6/102, 6/102, 5/102, 7/102, 6/102, 6/102, 6/102, 5/102, 5/102, 6/102,
-            6/102, 7/102, 4/102, 4/102, 4/102, 3/102, 3/102, 1/102, 2/102]
-    score = 0
-
+    # name                          | x
     # createdAt                     |
     # stargazers                    | ++
     # watchers                      | ++
@@ -346,6 +378,48 @@ def calc_repository_rank(data):
     # isArchived                    | ---
     # isFork                        | --
     # score                         | x
+
+    # List of weights each component has on the rank
+    weights = [ 4/102, 6/102, 6/102, 6/102, 5/102, 7/102, 6/102, 6/102, 6/102, 5/102, 5/102, 6/102,
+            6/102, 7/102, 4/102, 4/102, 4/102, 3/102, 3/102, 1/102, 2/102]
+    score = 0
+    idx = -1
+
+    for field in data:
+        # Skip unwanted params
+        if field == "name":
+            continue
+        if field == "score":
+            break;
+
+        param = None
+        # Parsing some of the params so that they can be used in the calc of the score
+        if field == "description":
+            param = data[field] != None
+        elif field == "languages":
+            param = len(data[field])
+        else:
+            param = data[field]
+
+
+        idx = idx + 1 # increment to get the next weights array offset
+
+        # Depending on the type of variable the multiple params aftect the score in different ways
+        if type(param) == int:
+            if param == 0:
+                continue
+
+            par = math.log(param)
+
+            # Sigmoid func
+            val = math.exp(par) / (math.exp(par) + 1)
+
+            score = score + (weights[idx] * val)
+        elif type(param) == bool:
+            score = score + (weights[idx] if param else 0)
+        else: # Date - str
+            gitHubDate = 1202428800 # Unix Time Stamp of the date that GitHub was founded (8, Feb 2008)
+            score = score + 0
 
     return score
 
