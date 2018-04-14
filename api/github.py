@@ -172,12 +172,9 @@ def get_repositories(user1, repo1, user2, repo2):
 
 # Function that parse the data from the users request to be easier to digest
 def parse_users(data):
-    user1=data['user1']['login'].lower()
-    user2=data['user2']['login'].lower()
-
     parsed_data = [
         {
-            "name": user1,
+            "name": data['user1']['login'],
             "followers"  : data['user1']['followers']['totalCount'],
             "following"  : data['user1']['following']['totalCount'],
             "issuesOpen" : data['user1']['issuesOpen']['totalCount'],
@@ -199,7 +196,7 @@ def parse_users(data):
             "score": None
         },
         {
-            "name": user2,
+            "name": data['user2']['login'],
             "followers"  : data['user2']['followers']['totalCount'],
             "following"  : data['user2']['following']['totalCount'],
             "issuesOpen" : data['user2']['issuesOpen']['totalCount'],
@@ -229,15 +226,12 @@ def parse_users(data):
 
 # Function that parse the data from the repositories request to be easier to digest
 def parse_repositories(data):
-    repo1 = data['repo1']['nameWithOwner'].lower()
-    repo2 = data['repo2']['nameWithOwner'].lower()
-
     languages1 = [t['node']['name'] for t in data['repo1']['languages']['edges']]
     languages2 = [t['node']['name'] for t in data['repo2']['languages']['edges']]
 
     parsed_data = [
         {
-            "name": repo1,
+            "name": data['repo1']['nameWithOwner'],
             "createdAt" : data['repo1']['createdAt'],
             "stargazers": data['repo1']['stargazers']['totalCount'],
             "watchers" : data['repo1']['watchers']['totalCount'],
@@ -265,7 +259,7 @@ def parse_repositories(data):
             "score": None
         },
         {
-            "name": repo2,
+            "name": data['repo2']['nameWithOwner'],
             "createdAt" : data['repo2']['createdAt'],
             "stargazers": data['repo2']['stargazers']['totalCount'],
             "watchers" : data['repo2']['watchers']['totalCount'],
