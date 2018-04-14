@@ -31,12 +31,14 @@ class Mongoloide:
             new_values = compB["compared_to"] + [name1]
             compB = self.comparisons.update_one({"repo_name":name2}, {'$set': {'compared_to': new_values}})
 
-    def get_related(self, name):
+    def get_related(self, name1, name2):
         try:
-            comp = self.comparisons.find_one({"repo_name":name})
-            i = random.randint(0,len(comp['compared_to'])-1)
-            return comp['compared_to'][i]
-        except ValueError:
+            compA = self.comparisons.find_one({"repo_name":name1})
+            compB = self.comparisons.find_one({"repo_name":name2})
+            related = [x for x in compA['compared_to'] if x != name2] + [x for x in compB['compared_to'] if x != name1]
+            i = random.randint(0,len(related))
+            return related[i]
+        except Exception:
             return []
 
     def get_user(self, name):
