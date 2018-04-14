@@ -19,9 +19,7 @@ services:
         depends_on:
             - mongo
     client:
-        image: nginx:alpine
-        volumes:
-            - ./client:/usr/share/nginx/html
+        build: client
         ports:
             - "80:80"
         depends_on:
