@@ -1,6 +1,8 @@
 import requests
 import json
 import math
+import time
+import dateutil.parser
 
 
 url = 'https://api.github.com/graphql'
@@ -352,8 +354,22 @@ def calc_user_rank(data):
         elif type(param) == bool:
             score = score + (weights[idx] if param else 0)
         else: # Date - str
-            gitHubDate = 1202428800 # Unix Time Stamp of the date that GitHub was founded (8, Feb 2008)
-            score = score + 0
+            val = int(time.time())
+            try:
+                val = int(time.mktime(dateutil.parser.parse(param).timetuple()))
+            except:
+                pass
+
+            now = int(time.time())
+
+            t_diff = now - val
+
+            par = math.log(t_diff)
+
+            # Sigmoid func
+            val = math.exp(par) / (math.exp(par) + 1)
+
+            score = score + (weights[idx] * val)
 
     return score
 
@@ -424,8 +440,26 @@ def calc_repository_rank(data):
         elif type(param) == bool:
             score = score + (weights[idx] if param else 0)
         else: # Date - str
-            gitHubDate = 1202428800 # Unix Time Stamp of the date that GitHub was founded (8, Feb 2008)
-            score = score + 0
+            val = int(time.time())
+            try:
+                val = int(time.mktime(dateutil.parser.parse(param).timetuple()))
+            except:
+                pass
+
+            now = int(time.time())
+
+            t_diff = now - val
+
+            par = 0
+            if field == "createdAt":
+                par = math.log(t_diff)
+            else:
+                par = 1 / t_diff
+
+            # Sigmoid func
+            val = math.exp(par) / (math.exp(par) + 1)
+
+            score = score + (weights[idx] * val)
 
     return score
 
