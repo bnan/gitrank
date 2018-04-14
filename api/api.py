@@ -19,7 +19,7 @@ def user(username1, username2):
 @app.route('/api/v1/repository/<name1>/<name2>/', methods=['GET'])
 def repository(name1, name2):
     mongo.add_comparison(name1, name2)
-    mongo.get_related(name1)
+    mongo.get_related(name1, name2)
     try:
         user1, repo1 = name1.split('.')
         user2, repo2 = name2.split('.')
