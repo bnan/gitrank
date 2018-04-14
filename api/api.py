@@ -36,16 +36,14 @@ def test_mean():
     users = github.get_users("ludeed", "faviouz")
     mongo.store_user(users[0]["name"], users[0])
     mongo.store_user(users[1]["name"], users[1])
-
     print(mongo.get_user("faviouz"))
     print(mongo.users_average())
 
-
-    repos = github.get_repositories("bnan", "markovitter", "joaobranquinho", "wake_me_up")
+    repos = github.get_repositories("facebook", "react", "joaobranquinho", "wake_me_up")
     mongo.store_repo(repos[0]["name"], repos[0])
     mongo.store_repo(repos[1]["name"], repos[1])
-    print(mongo.get_user(repos[0]["name"]))
-    print(mongo.get_user(repos[1]["name"]))
+    print(mongo.get_repo(repos[0]["name"]))
+    print(mongo.get_repo(repos[1]["name"]))
     print(mongo.repos_average())
 
     return jsonify({"None": "none"})
