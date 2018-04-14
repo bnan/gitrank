@@ -11,7 +11,10 @@ mongo = Mongoloide()
 @app.route('/api/v1/user/<username1>/<username2>/', methods=['GET'])
 def user(username1, username2):
     users = github.get_users(username1, username2)
-    return jsonify(**users)
+    try:
+        return jsonify(**{'message': 'success', 'results': users })
+    except Exception as e:
+        return jsonify(**{ 'message': str(e), 'results': [] })
 
 @app.route('/api/v1/repository/<name1>/<name2>/', methods=['GET'])
 def repository(name1, name2):
@@ -21,9 +24,9 @@ def repository(name1, name2):
         user1, repo1 = name1.split('.')
         user2, repo2 = name2.split('.')
         repositories = github.get_repositories(user1, repo1, user2, repo2)
-        return jsonify(**repositories)
+        return jsonify(**{'message': 'success', 'results': repositories })
     except Exception as e:
-        return jsonify(**{ 'error': 'invalid repository format' })
+        return jsonify(**{ 'message': str(e), 'results': [] })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=1337)

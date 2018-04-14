@@ -33,9 +33,7 @@ def get_users(user1, user2):
         }
         following {
           totalCount
-        }
-        issuesOpen:issues(states:OPEN) {
-          totalCount
+        } issuesOpen:issues(states:OPEN) { totalCount
         }
         issuesClosed:issues(states:CLOSED) {
           totalCount
@@ -165,54 +163,48 @@ def get_repositories(user1, repo1, user2, repo2):
 
 # Function that parse the data from the users request to be easier to digest
 def parse_users(data):
-    parsed_data = {
-                    data['user1']['login']:
-                      {
-                         "followers"  : data['user1']['followers']['totalCount'],
-                         "following"  : data['user1']['following']['totalCount'],
-                         "issuesOpen" : data['user1']['issuesOpen']['totalCount'],
-                         "issuesClosed" : data['user1']['issuesClosed']['totalCount'],
-                         "organizations" : data['user1']['organizations']['totalCount'],
-                         "pinnedRepositories" : data['user1']['pinnedRepositories']['totalCount'],
-                         "pullOpen" : data['user1']['pullOpen']['totalCount'],
-                         "pullClosed" : data['user1']['pullClosed']['totalCount'],
-                         "pullMerged" : data['user1']['pullMerged']['totalCount'],
-                         "repositories" : data['user1']['repositories']['totalCount'],
-                         "repositoriesContributedTo" :
-                         data['user1']['repositoriesContributedTo']['totalCount'],
-                         "starredRepositories" : data['user1']['starredRepositories']['totalCount'],
-                         "watching" : data['user1']['watching']['totalCount'],
-                         "bio" : data['user1']['bio'] != '',
-                         "location" : data['user1']['location'] != None,
-                         "company"  : data['user1']['company'] != "",
-                         "createdAt": data['user1']['createdAt'],
-                         "avatarUrl": data['user1']['avatarUrl']
-                     },
-                    data['user2']['login']:
-                      {
-                         "followers"  : data['user2']['followers']['totalCount'],
-                         "following"  : data['user2']['following']['totalCount'],
-                         "issuesOpen" : data['user2']['issuesOpen']['totalCount'],
-                         "issuesClosed" : data['user2']['issuesClosed']['totalCount'],
-                         "organizations" : data['user2']['organizations']['totalCount'],
-                         "pinnedRepositories" : data['user2']['pinnedRepositories']['totalCount'],
-                         "pullOpen" : data['user2']['pullOpen']['totalCount'],
-                         "pullClosed" : data['user2']['pullClosed']['totalCount'],
-                         "pullMerged" : data['user2']['pullMerged']['totalCount'],
-                         "repositories" : data['user2']['repositories']['totalCount'],
-                         "repositoriesContributedTo" :
-                         data['user2']['repositoriesContributedTo']['totalCount'],
-                         "starredRepositories" : data['user2']['starredRepositories']['totalCount'],
-                         "watching" : data['user2']['watching']['totalCount'],
-                         "bio" : data['user2']['bio'] != '',
-                         "location" : data['user2']['location'] != None,
-                         "company"  : data['user2']['company'] != "",
-                         "createdAt": data['user2']['createdAt'],
-                         "avatarUrl": data['user2']['avatarUrl']
-                     }
-                  }
-
-    return parsed_data
+    return [
+        {
+            "name": data['user1']['login'],
+            "followers"  : data['user1']['followers']['totalCount'],
+            "following"  : data['user1']['following']['totalCount'],
+            "issuesOpen" : data['user1']['issuesOpen']['totalCount'],
+            "issuesClosed" : data['user1']['issuesClosed']['totalCount'],
+            "organizations" : data['user1']['organizations']['totalCount'],
+            "pinnedRepositories" : data['user1']['pinnedRepositories']['totalCount'],
+            "pullOpen" : data['user1']['pullOpen']['totalCount'],
+            "pullClosed" : data['user1']['pullClosed']['totalCount'], "pullMerged" : data['user1']['pullMerged']['totalCount'], "repositories" : data['user1']['repositories']['totalCount'],
+            "repositoriesContributedTo" : data['user1']['repositoriesContributedTo']['totalCount'],
+            "starredRepositories" : data['user1']['starredRepositories']['totalCount'],
+            "watching" : data['user1']['watching']['totalCount'],
+            "bio" : data['user1']['bio'] != '',
+            "location" : data['user1']['location'] != None,
+            "company"  : data['user1']['company'] != "",
+            "createdAt": data['user1']['createdAt'],
+            "avatarUrl": data['user1']['avatarUrl']
+        },
+        {
+            "name": data['user2']['login'],
+            "followers"  : data['user2']['followers']['totalCount'],
+            "following"  : data['user2']['following']['totalCount'],
+            "issuesOpen" : data['user2']['issuesOpen']['totalCount'],
+            "issuesClosed" : data['user2']['issuesClosed']['totalCount'],
+            "organizations" : data['user2']['organizations']['totalCount'],
+            "pinnedRepositories" : data['user2']['pinnedRepositories']['totalCount'],
+            "pullOpen" : data['user2']['pullOpen']['totalCount'],
+            "pullClosed" : data['user2']['pullClosed']['totalCount'],
+            "pullMerged" : data['user2']['pullMerged']['totalCount'],
+            "repositories" : data['user2']['repositories']['totalCount'],
+            "repositoriesContributedTo" : data['user2']['repositoriesContributedTo']['totalCount'],
+            "starredRepositories" : data['user2']['starredRepositories']['totalCount'],
+            "watching" : data['user2']['watching']['totalCount'],
+            "bio" : data['user2']['bio'] != '',
+            "location" : data['user2']['location'] != None,
+            "company"  : data['user2']['company'] != "",
+            "createdAt": data['user2']['createdAt'],
+            "avatarUrl": data['user2']['avatarUrl']
+        }
+    ]
 
 
 # Function that parse the data from the repositories request to be easier to digest
@@ -220,61 +212,56 @@ def parse_repositories(data):
     languages1 = [t['node']['name'] for t in data['repo1']['languages']['edges']]
     languages2 = [t['node']['name'] for t in data['repo2']['languages']['edges']]
 
-    parsed_data = {
-                    data['repo1']['nameWithOwner']:
-                      {
-                          "createdAt" : data['repo1']['createdAt'],
-                          "stargazers": data['repo1']['stargazers']['totalCount'],
-                          "watchers" : data['repo1']['watchers']['totalCount'],
-                          "forkCount": data['repo1']['forkCount'],
-                          "refs" : data['repo1']['refs']['totalCount'],
-                          "totalCommits" :
-                          data['repo1']['master']['commit']['history']['totalCount'],
-                          "pushedAt" : data['repo1']['pushedAt'],
-                          "deployments":  data['repo1']['deployments']['totalCount'],
-                          "releases" :  data['repo1']['releases']['totalCount'],
-                          "issuesOpen":  data['repo1']['issuesOpen']['totalCount'],
-                          "issuesClosed": data['repo1']['issuesClosed']['totalCount'],
-                          "pullOpen":  data['repo1']['pullOpen']['totalCount'],
-                          "pullClosed": data['repo1']['pullClosed']['totalCount'],
-                          "pullMerged": data['repo1']['pullMerged']['totalCount'],
-                          "mileOpen": data['repo1']['mileOpen']['totalCount'],
-                          "mileClosed": data['repo1']['mileClosed']['totalCount'],
-                          "languages" : languages1,
-                          "description" : data['repo1']['description'] != None,
-                          "hasWikiEnabled" : data['repo1']['hasWikiEnabled'],
-                          "isArchived" : data['repo1']['isArchived'],
-                          "isFork" : data['repo1']['isFork']
-
-                     },
-                    data['repo2']['nameWithOwner']:
-                      {
-                          "createdAt" : data['repo2']['createdAt'],
-                          "stargazers": data['repo2']['stargazers']['totalCount'],
-                          "watchers" : data['repo2']['watchers']['totalCount'],
-                          "forkCount": data['repo2']['forkCount'],
-                          "refs" : data['repo2']['refs']['totalCount'],
-                          "totalCommits" :
-                          data['repo2']['master']['commit']['history']['totalCount'],
-                          "pushedAt" : data['repo2']['pushedAt'],
-                          "deployments":  data['repo2']['deployments']['totalCount'],
-                          "releases" :  data['repo2']['releases']['totalCount'],
-                          "issuesOpen":  data['repo2']['issuesOpen']['totalCount'],
-                          "issuesClosed": data['repo2']['issuesClosed']['totalCount'],
-                          "pullOpen":  data['repo2']['pullOpen']['totalCount'],
-                          "pullClosed": data['repo2']['pullClosed']['totalCount'],
-                          "pullMerged": data['repo2']['pullMerged']['totalCount'],
-                          "mileOpen": data['repo2']['mileOpen']['totalCount'],
-                          "mileClosed": data['repo2']['mileClosed']['totalCount'],
-                          "languages" : languages2,
-                          "description" : data['repo2']['description'] != None,
-                          "hasWikiEnabled" : data['repo2']['hasWikiEnabled'],
-                          "isArchived" : data['repo2']['isArchived'],
-                          "isFork" : data['repo2']['isFork']
-                     }
-                  }
-
-    return parsed_data
+    return [
+        {
+            "name": data['repo1']['nameWithOwner'],
+            "createdAt" : data['repo1']['createdAt'],
+            "stargazers": data['repo1']['stargazers']['totalCount'],
+            "watchers" : data['repo1']['watchers']['totalCount'],
+            "forkCount": data['repo1']['forkCount'],
+            "refs" : data['repo1']['refs']['totalCount'],
+            "totalCommits" : data['repo1']['master']['commit']['history']['totalCount'],
+            "pushedAt" : data['repo1']['pushedAt'],
+            "deployments":  data['repo1']['deployments']['totalCount'],
+            "releases" :  data['repo1']['releases']['totalCount'],
+            "issuesOpen":  data['repo1']['issuesOpen']['totalCount'],
+            "issuesClosed": data['repo1']['issuesClosed']['totalCount'],
+            "pullOpen":  data['repo1']['pullOpen']['totalCount'],
+            "pullClosed": data['repo1']['pullClosed']['totalCount'],
+            "pullMerged": data['repo1']['pullMerged']['totalCount'],
+            "mileOpen": data['repo1']['mileOpen']['totalCount'],
+            "mileClosed": data['repo1']['mileClosed']['totalCount'],
+            "languages" : languages1,
+            "description" : data['repo1']['description'] != None,
+            "hasWikiEnabled" : data['repo1']['hasWikiEnabled'],
+            "isArchived" : data['repo1']['isArchived'],
+            "isFork" : data['repo1']['isFork']
+        },
+        {
+            "name": data['repo2']['nameWithOwner'],
+            "createdAt" : data['repo2']['createdAt'],
+            "stargazers": data['repo2']['stargazers']['totalCount'],
+            "watchers" : data['repo2']['watchers']['totalCount'],
+            "forkCount": data['repo2']['forkCount'],
+            "refs" : data['repo2']['refs']['totalCount'],
+            "totalCommits" : data['repo2']['master']['commit']['history']['totalCount'],
+            "pushedAt" : data['repo2']['pushedAt'],
+            "deployments":  data['repo2']['deployments']['totalCount'],
+            "releases" :  data['repo2']['releases']['totalCount'],
+            "issuesOpen":  data['repo2']['issuesOpen']['totalCount'],
+            "issuesClosed": data['repo2']['issuesClosed']['totalCount'],
+            "pullOpen":  data['repo2']['pullOpen']['totalCount'],
+            "pullClosed": data['repo2']['pullClosed']['totalCount'],
+            "pullMerged": data['repo2']['pullMerged']['totalCount'],
+            "mileOpen": data['repo2']['mileOpen']['totalCount'],
+            "mileClosed": data['repo2']['mileClosed']['totalCount'],
+            "languages" : languages2,
+            "description" : data['repo2']['description'] != None,
+            "hasWikiEnabled" : data['repo2']['hasWikiEnabled'],
+            "isArchived" : data['repo2']['isArchived'],
+            "isFork" : data['repo2']['isFork']
+        }
+    ]
 
 if __name__ == '__main__':
     print(get_repositories("faviouz", "cantina", "makeorbreak-io", "peimi"))
