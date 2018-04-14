@@ -31,9 +31,12 @@ class Mongoloide:
             compB = self.comparisons.update_one({"repo_name":name2}, {'$set': {'compared_to': new_values}})
 
     def get_related(self, name):
-        comp = self.comparisons.find_one({"repo_name":name})
-        i = random.randint(1,len(comp['compared_to'])-1)
-        return comp['compared_to'][i]
+        try:
+            comp = self.comparisons.find_one({"repo_name":name})
+            i = random.randint(0,len(comp['compared_to'])-1)
+            return comp['compared_to'][i]
+        except ValueError:
+            return []
 
     def get_user(self, name):
         return self.users.find_one({"user_name":name})
@@ -76,9 +79,3 @@ class Mongoloide:
         ) ])
         return avg
 
-if __name__ == "__main__":
-    try:
-        i = random.randint(0,len(comp['compared_to'])-1)
-        return comp['compared_to'][i]
-    except ValueError:
-        return []
