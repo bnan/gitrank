@@ -1,6 +1,8 @@
 import requests
 import json
 import math
+import time
+import dateutil.parser
 
 
 url = 'https://api.github.com/graphql'
@@ -96,7 +98,10 @@ def get_repositories(user1, repo1, user2, repo2):
           totalCount
         }
         forkCount
-        refs(refPrefix: "refs/") {
+        branches:refs(refPrefix: "refs/heads/") {
+          totalCount
+        }
+        tags:refs(refPrefix: "refs/tags/") {
           totalCount
         }
         master: ref(qualifiedName: "master") {
@@ -167,12 +172,9 @@ def get_repositories(user1, repo1, user2, repo2):
 
 # Function that parse the data from the users request to be easier to digest
 def parse_users(data):
-    user1=data['user1']['login'].lower()
-    user2=data['user2']['login'].lower()
-
     parsed_data = [
         {
-            "name": user1,
+            "name": data['user1']['login'],
             "followers"  : data['user1']['followers']['totalCount'],
             "following"  : data['user1']['following']['totalCount'],
             "issuesOpen" : data['user1']['issuesOpen']['totalCount'],
@@ -194,7 +196,7 @@ def parse_users(data):
             "score": None
         },
         {
-            "name": user2,
+            "name": data['user2']['login'],
             "followers"  : data['user2']['followers']['totalCount'],
             "following"  : data['user2']['following']['totalCount'],
             "issuesOpen" : data['user2']['issuesOpen']['totalCount'],
@@ -224,20 +226,19 @@ def parse_users(data):
 
 # Function that parse the data from the repositories request to be easier to digest
 def parse_repositories(data):
-    repo1 = data['repo1']['nameWithOwner'].lower()
-    repo2 = data['repo2']['nameWithOwner'].lower()
-
     languages1 = [t['node']['name'] for t in data['repo1']['languages']['edges']]
     languages2 = [t['node']['name'] for t in data['repo2']['languages']['edges']]
 
     parsed_data = [
         {
-            "name": repo1,
+            "name": data['repo1']['nameWithOwner'],
             "createdAt" : data['repo1']['createdAt'],
             "stargazers": data['repo1']['stargazers']['totalCount'],
             "watchers" : data['repo1']['watchers']['totalCount'],
             "forkCount": data['repo1']['forkCount'],
-            "refs" : data['repo1']['refs']['totalCount'],
+            "branches" : data['repo1']['branches']['totalCount'] if
+                        data['repo1']['branches']['totalCount'] else 1,
+            "tags" : data['repo1']['tags']['totalCount'],
             "totalCommits" : data['repo1']['master']['commit']['history']['totalCount'],
             "pushedAt" : data['repo1']['pushedAt'],
             "deployments":  data['repo1']['deployments']['totalCount'],
@@ -258,12 +259,14 @@ def parse_repositories(data):
             "score": None
         },
         {
-            "name": repo2,
+            "name": data['repo2']['nameWithOwner'],
             "createdAt" : data['repo2']['createdAt'],
             "stargazers": data['repo2']['stargazers']['totalCount'],
             "watchers" : data['repo2']['watchers']['totalCount'],
             "forkCount": data['repo2']['forkCount'],
-            "refs" : data['repo2']['refs']['totalCount'],
+            "branches" : data['repo2']['branches']['totalCount'] if
+                        data['repo2']['branches']['totalCount'] else 1,
+            "tags" : data['repo2']['tags']['totalCount'],
             "totalCommits" : data['repo2']['master']['commit']['history']['totalCount'],
             "pushedAt" : data['repo2']['pushedAt'],
             "deployments":  data['repo2']['deployments']['totalCount'],
@@ -352,8 +355,22 @@ def calc_user_rank(data):
         elif type(param) == bool:
             score = score + (weights[idx] if param else 0)
         else: # Date - str
-            gitHubDate = 1202428800 # Unix Time Stamp of the date that GitHub was founded (8, Feb 2008)
-            score = score + 0
+            val = int(time.time())
+            try:
+                val = int(time.mktime(dateutil.parser.parse(param).timetuple()))
+            except:
+                pass
+
+            now = int(time.time())
+
+            t_diff = now - val
+
+            par = math.log(t_diff)
+
+            # Sigmoid func
+            val = math.exp(par) / (math.exp(par) + 1)
+
+            score = score + (weights[idx] * val)
 
     return score
 
@@ -365,7 +382,8 @@ def calc_repository_rank(data):
     # stargazers                    | ++
     # watchers                      | ++
     # forkCount                     | ++
-    # refs                          | +
+    # branches                      | +
+    # tags                          | +
     # totalCommits                  | +++
     # pushedAt                      | ++
     # deployments                   | ++
@@ -386,8 +404,7 @@ def calc_repository_rank(data):
     # score                         | x
 
     # List of weights each component has on the rank
-    weights = [ 4/106, 6/106, 6/106, 6/106, 5/106, 7/106, 6/106, 6/106, 6/106, 5/106, 5/106, 6/106,
-            6/106, 7/106, 4/106, 4/106, 4/106, 4/106, 3/106, 3/106, 1/106, 2/106]
+    weights = [ 4/111, 6/111, 6/111, 6/111, 5/111, 5/111, 7/111, 6/111, 6/111, 6/111, 5/111, 5/111, 6/111, 6/111, 7/111, 4/111, 4/111, 4/111, 4/111, 3/111, 3/111, 1/111, 2/111]
     score = 0
     idx = -1
 
@@ -424,8 +441,26 @@ def calc_repository_rank(data):
         elif type(param) == bool:
             score = score + (weights[idx] if param else 0)
         else: # Date - str
-            gitHubDate = 1202428800 # Unix Time Stamp of the date that GitHub was founded (8, Feb 2008)
-            score = score + 0
+            val = int(time.time())
+            try:
+                val = int(time.mktime(dateutil.parser.parse(param).timetuple()))
+            except:
+                pass
+
+            now = int(time.time())
+
+            t_diff = now - val
+
+            par = 0
+            if field == "createdAt":
+                par = math.log(t_diff)
+            else:
+                par = 1 / t_diff
+
+            # Sigmoid func
+            val = math.exp(par) / (math.exp(par) + 1)
+
+            score = score + (weights[idx] * val)
 
     return score
 
