@@ -28,5 +28,13 @@ def repository(name1, name2):
     except Exception as e:
         return jsonify(**{ 'message': str(e), 'results': [] })
 
+@app.route('/test_mean/', methods=['GET'])
+def test_mean():
+    user= github.get_users("ludeed", "faviouz")
+    mongo.store_user("faviouz", user["faviouz"])
+    print(mongo.get_user("faviouz"))
+    print(mongo.avg())
+    return jsonify({"None": "none"})
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=1337)

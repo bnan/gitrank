@@ -1,5 +1,6 @@
 import requests
 import json
+import math
 
 
 url = 'https://api.github.com/graphql'
@@ -163,9 +164,12 @@ def get_repositories(user1, repo1, user2, repo2):
 
 # Function that parse the data from the users request to be easier to digest
 def parse_users(data):
-    return [
+    user1=data['user1']['login'].lower()
+    user2=data['user2']['login'].lower()
+
+    parsed_data = [
         {
-            "name": data['user1']['login'],
+            "name": user1,
             "followers"  : data['user1']['followers']['totalCount'],
             "following"  : data['user1']['following']['totalCount'],
             "issuesOpen" : data['user1']['issuesOpen']['totalCount'],
@@ -173,7 +177,9 @@ def parse_users(data):
             "organizations" : data['user1']['organizations']['totalCount'],
             "pinnedRepositories" : data['user1']['pinnedRepositories']['totalCount'],
             "pullOpen" : data['user1']['pullOpen']['totalCount'],
-            "pullClosed" : data['user1']['pullClosed']['totalCount'], "pullMerged" : data['user1']['pullMerged']['totalCount'], "repositories" : data['user1']['repositories']['totalCount'],
+            "pullClosed" : data['user1']['pullClosed']['totalCount'],
+            "pullMerged" : data['user1']['pullMerged']['totalCount'],
+            "repositories" : data['user1']['repositories']['totalCount'],
             "repositoriesContributedTo" : data['user1']['repositoriesContributedTo']['totalCount'],
             "starredRepositories" : data['user1']['starredRepositories']['totalCount'],
             "watching" : data['user1']['watching']['totalCount'],
@@ -181,10 +187,11 @@ def parse_users(data):
             "location" : data['user1']['location'] != None,
             "company"  : data['user1']['company'] != "",
             "createdAt": data['user1']['createdAt'],
-            "avatarUrl": data['user1']['avatarUrl']
+            "avatarUrl": data['user1']['avatarUrl'],
+            "score": None
         },
         {
-            "name": data['user2']['login'],
+            "name": user2,
             "followers"  : data['user2']['followers']['totalCount'],
             "following"  : data['user2']['following']['totalCount'],
             "issuesOpen" : data['user2']['issuesOpen']['totalCount'],
@@ -202,19 +209,27 @@ def parse_users(data):
             "location" : data['user2']['location'] != None,
             "company"  : data['user2']['company'] != "",
             "createdAt": data['user2']['createdAt'],
-            "avatarUrl": data['user2']['avatarUrl']
+            "avatarUrl": data['user2']['avatarUrl'],
+            "score": None
         }
     ]
 
+    # Calculate users rank
+    parsed_data[0]['score']  = calc_user_rank(parsed_data[0])
+    parsed_data[1]['score']  = calc_user_rank(parsed_data[1])
+    return parsed_data
 
 # Function that parse the data from the repositories request to be easier to digest
 def parse_repositories(data):
+    repo1 = data['repo1']['nameWithOwner'].lower()
+    repo2 = data['repo2']['nameWithOwner'].lower()
+
     languages1 = [t['node']['name'] for t in data['repo1']['languages']['edges']]
     languages2 = [t['node']['name'] for t in data['repo2']['languages']['edges']]
 
-    return [
+    parsed_data = [
         {
-            "name": data['repo1']['nameWithOwner'],
+            "name": repo1,
             "createdAt" : data['repo1']['createdAt'],
             "stargazers": data['repo1']['stargazers']['totalCount'],
             "watchers" : data['repo1']['watchers']['totalCount'],
@@ -235,10 +250,11 @@ def parse_repositories(data):
             "description" : data['repo1']['description'] != None,
             "hasWikiEnabled" : data['repo1']['hasWikiEnabled'],
             "isArchived" : data['repo1']['isArchived'],
-            "isFork" : data['repo1']['isFork']
+            "isFork" : data['repo1']['isFork'],
+            "score": None
         },
         {
-            "name": data['repo2']['nameWithOwner'],
+            "name": repo2,
             "createdAt" : data['repo2']['createdAt'],
             "stargazers": data['repo2']['stargazers']['totalCount'],
             "watchers" : data['repo2']['watchers']['totalCount'],
@@ -259,9 +275,78 @@ def parse_repositories(data):
             "description" : data['repo2']['description'] != None,
             "hasWikiEnabled" : data['repo2']['hasWikiEnabled'],
             "isArchived" : data['repo2']['isArchived'],
-            "isFork" : data['repo2']['isFork']
+            "isFork" : data['repo2']['isFork'],
+            "score": None
         }
     ]
+
+    # Calculate repositories rank
+    parsed_data[0]['score']  = calc_repository_rank(parsed_data[0])
+    parsed_data[1]['score']  = calc_repository_rank(parsed_data[1])
+    return parsed_data
+
+# Calculate User rank
+def calc_user_rank(data):
+
+    # List of weights each component has on the rank
+    weights = []
+    score = 0
+
+    # followers                      | +
+    # following                      | -
+    # issuesOpen                     | +
+    # issuesClosed                   | +
+    # organizations                  | +
+    # pinnedRepositories             | ++
+    # pullOpen                       | ++
+    # pullClosed                     | ++
+    # pullMerged                     | +++
+    # repositories                   | ++++
+    # repositoriesContributedTo      | ++++
+    # starredRepositories            | -
+    # watching                       | -
+    # bio                            | --
+    # location                       | --
+    # company                        |
+    # createdAt                      |
+    # avatarUrl                      | x
+    # score                          | x
+
+    return score
+
+
+# Calculate Repository rank
+def calc_repository_rank(data):
+
+    # List of weights each component has on the rank
+    weights = []
+    score = 0
+
+    # createdAt                     |
+    # stargazers                    | ++
+    # watchers                      | ++
+    # forkCount                     | ++
+    # refs                          | +
+    # totalCommits                  | +++
+    # pushedAt                      | ++
+    # deployments                   | ++
+    # releases                      | ++
+    # issuesOpen                    | +
+    # issuesClosed                  | +
+    # pullOpen                      | ++
+    # pullClosed                    | ++
+    # pullMerged                    | +++
+    # mileOpen                      |
+    # mileClosed                    |
+    # languages                     | x
+    # description                   | -
+    # hasWikiEnabled                | -
+    # isArchived                    | ---
+    # isFork                        | --
+    # score                         | x
+
+    return score
+
 
 if __name__ == '__main__':
     print(get_repositories("faviouz", "cantina", "makeorbreak-io", "peimi"))

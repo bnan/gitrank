@@ -6,8 +6,10 @@ class Mongoloide:
     def __init__(self):
         client = MongoClient('mongo', 27017)
         db = client.test_database
+        self.db = client.test_database
         self.comparisons = db.comparisons
         self.rank_history = db.history
+        self.users = db.users
 
     def add_comparison(self, name1, name2):
         compA = self.comparisons.find_one({"repo_name":name1})
@@ -30,8 +32,53 @@ class Mongoloide:
 
     def get_related(self, name):
         comp = self.comparisons.find_one({"repo_name":name})
-        try:
-            i = random.randint(0,len(comp['compared_to'])-1)
-            return comp['compared_to'][i]
-        except ValueError:
-            return []
+        i = random.randint(1,len(comp['compared_to'])-1)
+        return comp['compared_to'][i]
+
+    def get_user(self, name):
+        return self.users.find_one({"user_name":name})
+
+    def store_user(self, name, data):
+        #Existig user
+        user = self.users.find_one({"user_name":name})
+        for key, value in data.items():
+            user = self.users.update_one({"user_name":name}, {'$set': {key: value}}, upsert=True)
+        return user
+
+    def avg(self):
+        avg =  set([ print(x) for x in self.users.aggregate(
+            [
+                {
+                    "$group":
+                    {
+                        "_id": "null",
+                        "avg_followers": { "$avg": "$followers" },
+                        "avg_following": { "$avg": "$following" },
+                        "avg_issuesOpen": { "$avg": "$issuesOpen" },
+                        "avg_issuesClosed": { "$avg": "$issuesClosed" },
+                        "avg_organizations": { "$avg": "$organizations" },
+                        "avg_pinnedRepositories": { "$avg": "$pinnedRepositories" },
+                        "avg_pullOpen": { "$avg": "$pullOpen" },
+                        "avg_pullClosed": { "$avg": "$pullClosed" },
+                        "avg_pullMerged": { "$avg": "$pullMerged" },
+                        "avg_repositories": { "$avg": "$repositories" },
+                        "avg_repositoriesContributedTo": { "$avg": "$repositoriesContributedTo" },
+                        "avg_starredRepositories": { "$avg": "$starredRepositories" },
+                        "avg_watching": { "$avg": "$watching" },
+                        "avg_bio": { "$avg": "$bio" },
+                        "avg_location": { "$avg": "$location" },
+                        "avg_bio": { "$avg": { "$sum": {"$cond" : [ "$bio", 1, 0 ] }} },
+                        "avg_location": { "$avg": { "$sum": {"$cond" : [ "$location", 1, 0 ] }} },
+                        "avg_company": { "$avg": { "$sum": {"$cond" : [ "$company", 1, 0 ] }} },
+                    }
+                }
+            ]
+        ) ])
+        return avg
+
+if __name__ == "__main__":
+    try:
+        i = random.randint(0,len(comp['compared_to'])-1)
+        return comp['compared_to'][i]
+    except ValueError:
+        return []
