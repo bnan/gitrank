@@ -68,13 +68,13 @@ if __name__ == '__main__':
 
     q = '''
     {
-        user1:user(login: "dedukun"){
+        user1:user(login: "%s"){
             %s
         },
-        user2:user(login: "faviouz"){
+        user2:user(login: "%s"){
             %s
         }
-    }''' % (queryBody,queryBody)
+    }''' % ("dedukun", queryBody, "faviouz", queryBody)
 
     r = requests.post(url=url, json=query(q), headers=headers)
     print(r.text)
