@@ -30,6 +30,8 @@ class Mongoloide:
 
     def get_related(self, name):
         comp = self.comparisons.find_one({"repo_name":name})
-        i = random.randint(1,len(comp['compared_to'])-1)
-        return comp['compared_to'][i]
-
+        try:
+            i = random.randint(0,len(comp['compared_to'])-1)
+            return comp['compared_to'][i]
+        except ValueError:
+            return []
