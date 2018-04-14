@@ -92,7 +92,7 @@ class Mongoloide:
     def store_repo(self, name, data):
         repo = self.repos.find_one({"repo_name":name})
         for key, value in data.items():
-            repo = self.users.update_one({"repo_name":name}, {'$set': {key: value}}, upsert=True)
+            repo = self.repos.update_one({"repo_name":name}, {'$set': {key: value}}, upsert=True)
         return repo
 
     def repos_average(self):
@@ -105,7 +105,8 @@ class Mongoloide:
                         "avg_stargazers":   { "$avg": "$stargazers" },
                         "avg_watchers":     { "$avg": "$watchers" },
                         "avg_forkCount":    { "$avg": "$forkCount" },
-                        "avg_refs":         { "$avg": "$refs" },
+                        "avg_branches":     { "$avg": "$branches" },
+                        "avg_tags":         { "$avg": "$tags" },
                         "avg_totalCommits": { "$avg": "$totalCommits" },
 
                         "avg_deployments":  { "$avg": "$deployments" },
