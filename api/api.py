@@ -1,33 +1,26 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
-import json
-from pymongo import MongoClient
 from mongoloide import Mongoloide
 
 
 app = Flask(__name__)
-CORS(app)
-
-#client = MongoClient('mongo', 27017)
-#db = client.test_database
-#comparisons = db.comparisons
-
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 mongo = Mongoloide()
 
-@app.route('/author/<username1>/<username2>/', methods=['GET'])
-def author(username1, username2):
+@app.route('/api/v1/user/<username1>/<username2>/', methods=['GET'])
+def user(username1, username2):
     mongo.get_related(username1)
-    return json.dumps({
+    return jsonify(**{
         'followers': 0,
         'following': 0,
         'since': 0,
         'avatar': ''
     })
 
-@app.route('/repository/<name1>/<name2>/', methods=['GET'])
+@app.route('/api/v1/repository/<name1>/<name2>/', methods=['GET'])
 def repository(name1, name2):
     mongo.add_comparison(name1, name2)
-    return json.dumps({
+    return jsonify(**{
         'stars': 0,
         'forks': 0,
         'branches': 0,
