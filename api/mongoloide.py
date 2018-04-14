@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 import random
+from github import parse_user_rank, user_rank
 
 class Mongoloide:
 
@@ -8,6 +9,7 @@ class Mongoloide:
         db = client.test_database
         self.comparisons = db.comparisons
         self.rank_history = db.history
+        self.users = db.users
 
     def add_comparison(self, name1, name2):
         compA = self.comparisons.find_one({"repo_name":name1})
@@ -33,4 +35,33 @@ class Mongoloide:
         comp = self.comparisons.find_one({"repo_name":name})
         i = random.randint(1,len(comp['compared_to'])-1)
         return comp['compared_to'][i]
+
+    def get_user(self, name):
+        return self.user.find_one({"user_name":name})
+
+    def store_user(self, name, data):
+        #Existig user
+        user = self.user.find_one({"user_name":name})
+        user = self.user.update_one({"user_name":name}, {'$set': {key: value}}, upsert=True)
+        return user 
+        
+    def avg(self):
+        avg =  self.user.aggregate(
+            [
+                {
+                    "$group":
+                    {
+                        "avgFollowers": { "$avg": "followers" },
+                        "avgfollowing": { "$avg": "following" },
+                    }
+                }
+            ]
+        )
+        print(avg)
+
+if __name__ == "__main__":
+    user = parse_user_rank(user_rank("ludeed", "faviouz"))
+    mon = MongoClient()
+    mon.store_user(user)
+    mon.avg()
 
