@@ -38,7 +38,7 @@ class Mongoloide:
             related = [x for x in compA['compared_to'] if x != name2] + [x for x in compB['compared_to'] if x != name1]
             i = random.randint(0,len(related))
             return related[i]
-        except ValueError:
+        except Exception:
             return []
 
     def get_user(self, name):
