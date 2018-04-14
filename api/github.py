@@ -1,15 +1,14 @@
 import requests
 import json
 
-
 url = 'https://api.github.com/graphql'
 api_token = 'a68f7ffae3ee31dd86209dcc5e56be49e9cd974a'
 headers = {'Authorization': f'token {api_token}'}
 
 def query(q):
-    return { "query": f"{q}" }
+    return { "query": q }
 
-def repository_rank(name):
+def author_rank(username):
     return rank_followers(followers) + rank_following(following)
 
 def rank_followers(followers):
@@ -18,7 +17,69 @@ def rank_followers(followers):
 def rank_following(following):
     return 0
 
-if __name__ == '__main__':
+def user_rank(user):
+
+    queryBody = '''
+        followers {
+          totalCount
+        }
+        following {
+          totalCount
+        }
+        issuesOpen:issues(states:OPEN) {
+          totalCount
+        }
+        issuesClosed:issues(states:CLOSED) {
+          totalCount
+        }
+        organizations {
+          totalCount
+        }
+        pinnedRepositories(privacy:PUBLIC) {
+          totalCount
+        }
+        pullOpen:pullRequests(states:OPEN) {
+          totalCount
+        }
+        pullClosed:pullRequests(states:CLOSED) {
+          totalCount
+        }
+        pullMerged:pullRequests(states:MERGED) {
+          totalCount
+        }
+        repositories(privacy: PUBLIC) {
+          totalCount
+        }
+        repositoriesContributedTo(privacy: PUBLIC) {
+          totalCount
+        }
+        starredRepositories {
+          totalCount
+        }
+        watching(privacy: PUBLIC) {
+          totalCount
+        }
+        location
+        company
+        createdAt
+        avatarUrl
+        '''
+
+    q = '''
+    {
+        user(login: "%s"){
+            %s
+        }
+    }''' % (user, queryBody)
+
+    r = requests.post(url=url, json=query(q), headers=headers)
+    json_data = json.loads(r.text)
+
+    return json_data['data']
+
+
+
+def repository_rank(user, repo):
 
     queryBody = '''
         createdAt
@@ -85,16 +146,16 @@ if __name__ == '__main__':
 
     q = '''
     {
-      repo1: repository(owner: "%s", name: "%s") {
-        %s
-      },
-      repo2: repository(owner: "%s", name: "%s") {
+      repository(owner: "%s", name: "%s") {
         %s
       }
-    }''' % ("makeorbreak-io", "peimi", queryBody, "tensorflow", "tensorflow", queryBody)
+    }''' % (user, repo, queryBody)
 
     r = requests.post(url=url, json=query(q), headers=headers)
     json_data = json.loads(r.text)
 
-    print(json_data['data'])
+    return json_data['data']
 
+if __name__ == '__main__':
+	print(repository_rank("faviouz", "cantina"))
+	print(user_rank("faviouz"))
