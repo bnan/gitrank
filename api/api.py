@@ -2,18 +2,21 @@ from flask import Flask
 from flask_cors import CORS
 import json
 from pymongo import MongoClient
+from mongoloide import Mongoloide
 
 
 app = Flask(__name__)
 CORS(app)
 
-client = MongoClient('mongo', 27017)
-db = client.test_database
-comparisons = db.comparisons
+#client = MongoClient('mongo', 27017)
+#db = client.test_database
+#comparisons = db.comparisons
+
+mongo = Mongoloide()
 
 @app.route('/author/<username1>/<username2>/', methods=['GET'])
-def author(username):
-
+def author(username1, username2):
+    mongo.get_related(username1)
     return json.dumps({
         'followers': 0,
         'following': 0,
@@ -23,25 +26,7 @@ def author(username):
 
 @app.route('/repository/<name1>/<name2>/', methods=['GET'])
 def repository(name1, name2):
-    compA = comparisons.find_one({"repo_name":name1})
-    compB = comparisons.find_one({"repo_name":name2})
-
-    if( compA == None ):
-        compA = {"repo_name":name1,
-                 "compared_to":[name2,]}
-        comp = comparisons.insert_one(compA)
-    else:
-        new_values = compA["compared_to"] + [name2]
-        compA = comparisons.update_one({"repo_name":name1}, {'$set': {'compared_to': new_values}})
-
-    if( compB == None ):
-        compB = {"repo_name":name2,
-                 "compared_to":[name1,]}
-        comp = comparisons.insert_one(compB)
-    else:
-        new_values = compB["compared_to"] + [name1]
-        compB = comparisons.update_one({"repo_name":name2}, {'$set': {'compared_to': new_values}})
-
+    mongo.add_comparison(name1, name2)
     return json.dumps({
         'stars': 0,
         'forks': 0,
@@ -56,4 +41,3 @@ def repository(name1, name2):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=1337)
-
