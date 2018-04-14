@@ -98,7 +98,10 @@ def get_repositories(user1, repo1, user2, repo2):
           totalCount
         }
         forkCount
-        refs(refPrefix: "refs/") {
+        branches:refs(refPrefix: "refs/heads/") {
+          totalCount
+        }
+        tags:refs(refPrefix: "refs/tags/") {
           totalCount
         }
         master: ref(qualifiedName: "master") {
@@ -239,7 +242,9 @@ def parse_repositories(data):
             "stargazers": data['repo1']['stargazers']['totalCount'],
             "watchers" : data['repo1']['watchers']['totalCount'],
             "forkCount": data['repo1']['forkCount'],
-            "refs" : data['repo1']['refs']['totalCount'],
+            "branches" : data['repo1']['branches']['totalCount'] if
+                        data['repo1']['branches']['totalCount'] else 1,
+            "tags" : data['repo1']['tags']['totalCount'],
             "totalCommits" : data['repo1']['master']['commit']['history']['totalCount'],
             "pushedAt" : data['repo1']['pushedAt'],
             "deployments":  data['repo1']['deployments']['totalCount'],
@@ -265,7 +270,9 @@ def parse_repositories(data):
             "stargazers": data['repo2']['stargazers']['totalCount'],
             "watchers" : data['repo2']['watchers']['totalCount'],
             "forkCount": data['repo2']['forkCount'],
-            "refs" : data['repo2']['refs']['totalCount'],
+            "branches" : data['repo2']['branches']['totalCount'] if
+                        data['repo2']['branches']['totalCount'] else 1,
+            "tags" : data['repo2']['tags']['totalCount'],
             "totalCommits" : data['repo2']['master']['commit']['history']['totalCount'],
             "pushedAt" : data['repo2']['pushedAt'],
             "deployments":  data['repo2']['deployments']['totalCount'],
@@ -381,7 +388,8 @@ def calc_repository_rank(data):
     # stargazers                    | ++
     # watchers                      | ++
     # forkCount                     | ++
-    # refs                          | +
+    # branches                      | +
+    # tags                          | +
     # totalCommits                  | +++
     # pushedAt                      | ++
     # deployments                   | ++
@@ -402,8 +410,7 @@ def calc_repository_rank(data):
     # score                         | x
 
     # List of weights each component has on the rank
-    weights = [ 4/106, 6/106, 6/106, 6/106, 5/106, 7/106, 6/106, 6/106, 6/106, 5/106, 5/106, 6/106,
-            6/106, 7/106, 4/106, 4/106, 4/106, 4/106, 3/106, 3/106, 1/106, 2/106]
+    weights = [ 4/111, 6/111, 6/111, 6/111, 5/111, 5/111, 7/111, 6/111, 6/111, 6/111, 5/111, 5/111, 6/111, 6/111, 7/111, 4/111, 4/111, 4/111, 4/111, 3/111, 3/111, 1/111, 2/111]
     score = 0
     idx = -1
 
