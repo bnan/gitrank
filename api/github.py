@@ -17,7 +17,7 @@ def rank_followers(followers):
 def rank_following(following):
     return 0
 
-def user_rank(user):
+def user_rank(user1,user2):
 
     queryBody = '''
         followers {
@@ -67,10 +67,13 @@ def user_rank(user):
 
     q = '''
     {
-        user(login: "%s"){
+        user1:user(login: "%s"){
+            %s
+        },
+        user2:user(login: "%s"){
             %s
         }
-    }''' % (user, queryBody)
+    }''' % (user1, queryBody, user2, queryBody)
 
     r = requests.post(url=url, json=query(q), headers=headers)
     json_data = json.loads(r.text)
@@ -79,7 +82,7 @@ def user_rank(user):
 
 
 
-def repository_rank(user, repo):
+def repository_rank(user1, repo1, user2, repo2):
 
     queryBody = '''
         createdAt
@@ -146,10 +149,13 @@ def repository_rank(user, repo):
 
     q = '''
     {
-      repository(owner: "%s", name: "%s") {
+      repo1:repository(owner: "%s", name: "%s") {
+        %s
+      },
+      repo2:repository(owner: "%s", name: "%s") {
         %s
       }
-    }''' % (user, repo, queryBody)
+    }''' % (user1, repo1, queryBody, user2, repo2, queryBody)
 
     r = requests.post(url=url, json=query(q), headers=headers)
     json_data = json.loads(r.text)
@@ -157,5 +163,5 @@ def repository_rank(user, repo):
     return json_data['data']
 
 if __name__ == '__main__':
-	print(repository_rank("faviouz", "cantina"))
-	print(user_rank("faviouz"))
+	print(repository_rank("faviouz", "cantina", "makeorbreak-io", "peimi"))
+	print(user_rank("faviouz", "dedukun"))
