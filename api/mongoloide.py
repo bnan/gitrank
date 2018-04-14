@@ -10,6 +10,7 @@ class Mongoloide:
         self.comparisons = db.comparisons
         self.rank_history = db.history
         self.users = db.users
+        self.repos = db.repos
 
     def add_comparison(self, name1, name2):
         compA = self.comparisons.find_one({"repo_name":name1})
@@ -44,13 +45,12 @@ class Mongoloide:
         return self.users.find_one({"user_name":name})
 
     def store_user(self, name, data):
-        #Existig user
         user = self.users.find_one({"user_name":name})
         for key, value in data.items():
             user = self.users.update_one({"user_name":name}, {'$set': {key: value}}, upsert=True)
         return user
 
-    def avg(self):
+    def users_average(self):
         avg =  set([ print(x) for x in self.users.aggregate(
             [
                 {
@@ -70,11 +70,47 @@ class Mongoloide:
                         "avg_repositoriesContributedTo": { "$avg": "$repositoriesContributedTo" },
                         "avg_starredRepositories": { "$avg": "$starredRepositories" },
                         "avg_watching": { "$avg": "$watching" },
-                        "avg_bio": { "$avg": "$bio" },
-                        "avg_location": { "$avg": "$location" },
-                        "avg_bio": { "$avg": { "$sum": {"$cond" : [ "$bio", 1, 0 ] }} },
-                        "avg_location": { "$avg": { "$sum": {"$cond" : [ "$location", 1, 0 ] }} },
-                        "avg_company": { "$avg": { "$sum": {"$cond" : [ "$company", 1, 0 ] }} },
+                    }
+                }
+            ]
+        ) ])
+        return avg
+
+
+    def get_repo(self, name):
+        return self.repos.find_one({"repo_name":name})
+
+    def store_repo(self, name, data):
+        repo = self.repos.find_one({"repo_name":name})
+        for key, value in data.items():
+            repo = self.users.update_one({"repo_name":name}, {'$set': {key: value}}, upsert=True)
+        return repo
+
+    def repos_average(self):
+        avg =  set([ print(x) for x in self.repos.aggregate(
+            [
+                {
+                    "$group":
+                    {
+                        "_id": "null",
+                        "avg_stargazers":   { "$avg": "$stargazers" },
+                        "avg_watchers":     { "$avg": "$watchers" },
+                        "avg_forkCount":    { "$avg": "$forkCount" },
+                        "avg_refs":         { "$avg": "$refs" },
+                        "avg_totalCommits": { "$avg": "$totalCommits" },
+
+                        "avg_deployments":  { "$avg": "$deployments" },
+                        "avg_releases":     { "$avg": "$releases" },
+                        "avg_issuesOpen":   { "$avg": "$issuesOpen" },
+                        "avg_issuesClosed": { "$avg": "$issuesClosed" },
+                        "avg_pullOpen":     { "$avg": "$pullOpen" },
+
+                        "avg_pullClosed":   { "$avg": "$pullClosed" },
+                        "avg_pullMerged":   { "$avg": "$pullMerged" },
+                        "avg_mileOpen":     { "$avg": "$mileOpen" },
+                        "avg_mileClosed":   { "$avg": "$mileClosed" },
+                        "avg_languages":    { "$avg": "$languages" },
+
                     }
                 }
             ]

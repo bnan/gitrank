@@ -28,12 +28,24 @@ def repository(name1, name2):
     except Exception as e:
         return jsonify(**{ 'message': str(e), 'results': [] })
 
+
 @app.route('/test_mean/', methods=['GET'])
 def test_mean():
-    user= github.get_users("ludeed", "faviouz")
-    mongo.store_user("faviouz", user["faviouz"])
+    users = github.get_users("ludeed", "faviouz")
+    mongo.store_user(users[0]["name"], users[0])
+    mongo.store_user(users[1]["name"], users[1])
+
     print(mongo.get_user("faviouz"))
-    print(mongo.avg())
+    print(mongo.users_average())
+
+
+    repos = github.get_repositories("bnan", "markovitter", "joaobranquinho", "wake_me_up")
+    mongo.store_repo(repos[0]["name"], repos[0])
+    mongo.store_repo(repos[1]["name"], repos[1])
+    print(mongo.get_user(repos[0]["name"]))
+    print(mongo.get_user(repos[1]["name"]))
+    print(mongo.repos_average())
+
     return jsonify({"None": "none"})
 
 if __name__ == '__main__':

@@ -1,6 +1,8 @@
 import requests
 import json
 import math
+import time
+import dateutil.parser
 
 
 url = 'https://api.github.com/graphql'
@@ -143,6 +145,9 @@ def get_repositories(user1, repo1, user2, repo2):
             }
           }
         }
+        licenseInfo {
+  	  name
+  	}
         description
         hasWikiEnabled
         isArchived
@@ -247,6 +252,7 @@ def parse_repositories(data):
             "mileOpen": data['repo1']['mileOpen']['totalCount'],
             "mileClosed": data['repo1']['mileClosed']['totalCount'],
             "languages" : languages1,
+            "license" : data['repo1']['licenseInfo'],
             "description" : data['repo1']['description'],
             "hasWikiEnabled" : data['repo1']['hasWikiEnabled'],
             "isArchived" : data['repo1']['isArchived'],
@@ -272,6 +278,7 @@ def parse_repositories(data):
             "mileOpen": data['repo2']['mileOpen']['totalCount'],
             "mileClosed": data['repo2']['mileClosed']['totalCount'],
             "languages" : languages2,
+            "license" : data['repo2']['licenseInfo'],
             "description" : data['repo2']['description'],
             "hasWikiEnabled" : data['repo2']['hasWikiEnabled'],
             "isArchived" : data['repo2']['isArchived'],
@@ -347,8 +354,22 @@ def calc_user_rank(data):
         elif type(param) == bool:
             score = score + (weights[idx] if param else 0)
         else: # Date - str
-            gitHubDate = 1202428800 # Unix Time Stamp of the date that GitHub was founded (8, Feb 2008)
-            score = score + 0
+            val = int(time.time())
+            try:
+                val = int(time.mktime(dateutil.parser.parse(param).timetuple()))
+            except:
+                pass
+
+            now = int(time.time())
+
+            t_diff = now - val
+
+            par = math.log(t_diff)
+
+            # Sigmoid func
+            val = math.exp(par) / (math.exp(par) + 1)
+
+            score = score + (weights[idx] * val)
 
     return score
 
@@ -372,7 +393,8 @@ def calc_repository_rank(data):
     # pullMerged                    | +++
     # mileOpen                      |
     # mileClosed                    |
-    # languages                     |
+    # languages (number)            |
+    # license                       |
     # description                   | -
     # hasWikiEnabled                | -
     # isArchived                    | ---
@@ -380,8 +402,8 @@ def calc_repository_rank(data):
     # score                         | x
 
     # List of weights each component has on the rank
-    weights = [ 4/102, 6/102, 6/102, 6/102, 5/102, 7/102, 6/102, 6/102, 6/102, 5/102, 5/102, 6/102,
-            6/102, 7/102, 4/102, 4/102, 4/102, 3/102, 3/102, 1/102, 2/102]
+    weights = [ 4/106, 6/106, 6/106, 6/106, 5/106, 7/106, 6/106, 6/106, 6/106, 5/106, 5/106, 6/106,
+            6/106, 7/106, 4/106, 4/106, 4/106, 4/106, 3/106, 3/106, 1/106, 2/106]
     score = 0
     idx = -1
 
@@ -394,7 +416,7 @@ def calc_repository_rank(data):
 
         param = None
         # Parsing some of the params so that they can be used in the calc of the score
-        if field == "description":
+        if field == "description" or field == "license":
             param = data[field] != None
         elif field == "languages":
             param = len(data[field])
@@ -418,13 +440,31 @@ def calc_repository_rank(data):
         elif type(param) == bool:
             score = score + (weights[idx] if param else 0)
         else: # Date - str
-            gitHubDate = 1202428800 # Unix Time Stamp of the date that GitHub was founded (8, Feb 2008)
-            score = score + 0
+            val = int(time.time())
+            try:
+                val = int(time.mktime(dateutil.parser.parse(param).timetuple()))
+            except:
+                pass
+
+            now = int(time.time())
+
+            t_diff = now - val
+
+            par = 0
+            if field == "createdAt":
+                par = math.log(t_diff)
+            else:
+                par = 1 / t_diff
+
+            # Sigmoid func
+            val = math.exp(par) / (math.exp(par) + 1)
+
+            score = score + (weights[idx] * val)
 
     return score
 
 
 if __name__ == '__main__':
-    print(get_repositories("faviouz", "cantina", "makeorbreak-io", "peimi"))
+    print(get_repositories("bnan", "markovitter", "joaobranquinho", "wake_me_up"))
     print()
     print(get_users("faviouz", "dedukun"))
