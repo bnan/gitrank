@@ -43,8 +43,8 @@ class Mongoloide:
         user = self.users.find_one({"user_name":name})
         for key, value in data.items():
             user = self.users.update_one({"user_name":name}, {'$set': {key: value}}, upsert=True)
-        return user 
-        
+        return user
+
     def avg(self):
         avg =  set([ print(x) for x in self.users.aggregate(
             [
