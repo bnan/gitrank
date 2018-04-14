@@ -8,7 +8,6 @@ class Mongoloide:
         db = client.test_database
         self.db = client.test_database
         self.comparisons = db.comparisons
-        self.rank_history = db.history
         self.users = db.users
         self.repos = db.repos
 
@@ -18,14 +17,15 @@ class Mongoloide:
 
         if compA == None:
             compA = {"repo_name":name1,
-                     "compared_to":[name2,]}
+                     "compared_to":[name2,],
+                     "history":[]}
             comp = self.comparisons.insert_one(compA)
         else:
             new_values = compA["compared_to"] + [name2]
             compA = self.comparisons.update_one({"repo_name":name1}, {'$set': {'compared_to': new_values}})
 
         if compB == None:
-            compB = {"repo_name":name2, "compared_to":[name1,]}
+            compB = {"repo_name":name2, "compared_to":[name1,], "history":[]}
             comp = self.comparisons.insert_one(compB)
         else:
             new_values = compB["compared_to"] + [name1]
@@ -40,6 +40,15 @@ class Mongoloide:
             return related[i]
         except Exception:
             return []
+
+    def set_score(self, name, score):
+        comp = self.comparisons.find_one({"repo_name":name })
+        new_scores = comp["history"]+[score]
+        comp = self.comparisons.update_one({"repo_name":name }, {'$set': {'history': new_scores}})
+
+    def get_history(self, name):
+        comp = self.comparisons.find_one({"repo_name":name })
+        return comp["history"]
 
     def get_user(self, name):
         return self.users.find_one({"user_name":name})
