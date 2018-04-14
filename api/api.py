@@ -23,13 +23,24 @@ def author(username):
 
 @app.route('/repository/<name1>/<name2>/', methods=['GET'])
 def repository(name1, name2):
-    compA = {"repo_name":name1,
-             "compared_to":name2}
-    compB = {"repo_name":name2,
-             "compared_to":name1}
+    compA = comparisons.find_one({"repo_name":name1})
+    compB = comparisons.find_one({"repo_name":name2})
 
-    comp = comparisons.insert_one(compA)
-    comp = comparisons.insert_one(compB)
+    if( compA == None ):
+        compA = {"repo_name":name1,
+                 "compared_to":[name2,]}
+        comp = comparisons.insert_one(compA)
+    else:
+        new_values = compA["compared_to"] + [name2]
+        compA = comparisons.update_one({"repo_name":name1}, {'$set': {'compared_to': new_values}})
+
+    if( compB == None ):
+        compB = {"repo_name":name2,
+                 "compared_to":[name1,]}
+        comp = comparisons.insert_one(compB)
+    else:
+        new_values = compB["compared_to"] + [name1]
+        compB = comparisons.update_one({"repo_name":name2}, {'$set': {'compared_to': new_values}})
 
     return json.dumps({
         'stars': 0,
