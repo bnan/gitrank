@@ -35,7 +35,7 @@ if __name__ == '__main__':
         master: ref(qualifiedName: "master") {
           commit: target {
             ... on Commit {
-              history{
+              history(first:0){
                 totalCount
               }
             }
@@ -85,14 +85,16 @@ if __name__ == '__main__':
 
     q = '''
     {
-      repo1: repository(owner: "makeorbreak-io", name: "peimi") {
+      repo1: repository(owner: "%s", name: "%s") {
         %s
       },
-      repo2: repository(owner: "bnan", name: "markovitter") {
+      repo2: repository(owner: "%s", name: "%s") {
         %s
       }
-    }''' % (queryBody,queryBody)
+    }''' % ("makeorbreak-io", "peimi", queryBody, "tensorflow", "tensorflow", queryBody)
 
     r = requests.post(url=url, json=query(q), headers=headers)
-    print(r.text)
+    json_data = json.loads(r.text)
+
+    print(json_data['data'])
 
