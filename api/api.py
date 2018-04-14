@@ -1,50 +1,37 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
-import json
-from pymongo import MongoClient
 from mongoloide import Mongoloide
-from github import parse_user_rank, user_rank
+import github
 
 
 app = Flask(__name__)
-CORS(app)
-
-#client = MongoClient('mongo', 27017)
-#db = client.test_database
-#comparisons = db.comparisons
-
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 mongo = Mongoloide()
 
-@app.route('/author/<username1>/<username2>/', methods=['GET'])
-def author(username1, username2):
-    mongo.get_related(username1)
-    return json.dumps({
-        'followers': 0,
-        'following': 0,
-        'since': 0,
-        'avatar': ''
-    })
+@app.route('/api/v1/user/<username1>/<username2>/', methods=['GET'])
+def user(username1, username2):
+    users = github.get_users(username1, username2)
+    return jsonify(**users)
 
-@app.route('/repository/<name1>/<name2>/', methods=['GET'])
+@app.route('/api/v1/repository/<name1>/<name2>/', methods=['GET'])
 def repository(name1, name2):
     mongo.add_comparison(name1, name2)
-    return json.dumps({
-        'stars': 0,
-        'forks': 0,
-        'branches': 0,
-        'commits': 0,
-        'latest_commit': 0,
-        'contributors': 0,
-        'issues': 0,
-        'pull_requests': 0,
-        'score': 0
-    })
+    mongo.get_related(name1)
+    try:
+        user1, repo1 = name1.split('.')
+        user2, repo2 = name2.split('.')
+        repositories = github.get_repositories(user1, repo1, user2, repo2)
+        return jsonify(**repositories)
+    except Exception as e:
+        return jsonify(**{ 'error': 'invalid repository format' })
+
 @app.route('/test_mean/', methods=['GET'])
 def test_mean():
-    user = parse_user_rank(user_rank("ludeed", "faviouz"))
-    mon = MongoClient()
-    mon.store_user(user)
-    mon.avg()
+    user= github.get_users("ludeed", "faviouz")
+    mongo.store_user("faviouz", user["faviouz"])
+    print(mongo.get_user("faviouz"))
+    print(mongo.avg())
+    return jsonify({"None": "none"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=1337)

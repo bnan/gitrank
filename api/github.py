@@ -26,7 +26,7 @@ def rank_following(following):
     return 0
 
 
-def user_rank(user1,user2):
+def get_users(user1, user2):
     queryBody = '''
         followers {
           totalCount
@@ -71,7 +71,8 @@ def user_rank(user1,user2):
         location
         company
         createdAt
-        avatarUrl'''
+        avatarUrl
+        login'''
 
     q = '''
     {
@@ -83,10 +84,10 @@ def user_rank(user1,user2):
         }
     }''' % (user1, queryBody, user2, queryBody)
 
-    return parse_user_rank(query(q))
+    return parse_users(query(q))
 
 
-def repository_rank(user1, repo1, user2, repo2):
+def get_repositories(user1, repo1, user2, repo2):
     queryBody = '''
         createdAt
         stargazers {
@@ -109,7 +110,6 @@ def repository_rank(user1, repo1, user2, repo2):
           }
         }
         pushedAt
-        diskUsage
         deployments {
           totalCount
         }
@@ -144,8 +144,11 @@ def repository_rank(user1, repo1, user2, repo2):
             }
           }
         }
+        description
+        hasWikiEnabled
         isArchived
-        isFork'''
+        isFork
+        nameWithOwner'''
 
     q = '''
     {
@@ -157,13 +160,13 @@ def repository_rank(user1, repo1, user2, repo2):
       }
     }''' % (user1, repo1, queryBody, user2, repo2, queryBody)
 
-    return parse_repo_rank(query(q))
+    return parse_repositories(query(q))
 
 
 # Function that parse the data from the users request to be easier to digest
-def parse_user_rank(data):
+def parse_users(data):
     parsed_data = {
-                    "user1":
+                    data['user1']['login']:
                       {
                          "followers"  : data['user1']['followers']['totalCount'],
                          "following"  : data['user1']['following']['totalCount'],
@@ -185,7 +188,7 @@ def parse_user_rank(data):
                          "createdAt": data['user1']['createdAt'],
                          "avatarUrl": data['user1']['avatarUrl']
                      },
-                    "user2":
+                    data['user2']['login']:
                       {
                          "followers"  : data['user2']['followers']['totalCount'],
                          "following"  : data['user2']['following']['totalCount'],
@@ -213,12 +216,12 @@ def parse_user_rank(data):
 
 
 # Function that parse the data from the repositories request to be easier to digest
-def parse_repo_rank(data):
-    languages1 = {t['node']['name'] for t in data['repo1']['languages']['edges']}
-    languages2 = {t['node']['name'] for t in data['repo2']['languages']['edges']}
+def parse_repositories(data):
+    languages1 = [t['node']['name'] for t in data['repo1']['languages']['edges']]
+    languages2 = [t['node']['name'] for t in data['repo2']['languages']['edges']]
 
     parsed_data = {
-                    "repo1":
+                    data['repo1']['nameWithOwner']:
                       {
                           "createdAt" : data['repo1']['createdAt'],
                           "stargazers": data['repo1']['stargazers']['totalCount'],
@@ -228,7 +231,6 @@ def parse_repo_rank(data):
                           "totalCommits" :
                           data['repo1']['master']['commit']['history']['totalCount'],
                           "pushedAt" : data['repo1']['pushedAt'],
-                          "diskUsage" : data['repo1']['diskUsage'],
                           "deployments":  data['repo1']['deployments']['totalCount'],
                           "releases" :  data['repo1']['releases']['totalCount'],
                           "issuesOpen":  data['repo1']['issuesOpen']['totalCount'],
@@ -239,10 +241,13 @@ def parse_repo_rank(data):
                           "mileOpen": data['repo1']['mileOpen']['totalCount'],
                           "mileClosed": data['repo1']['mileClosed']['totalCount'],
                           "languages" : languages1,
+                          "description" : data['repo1']['description'] != None,
+                          "hasWikiEnabled" : data['repo1']['hasWikiEnabled'],
                           "isArchived" : data['repo1']['isArchived'],
                           "isFork" : data['repo1']['isFork']
+
                      },
-                    "repo2":
+                    data['repo2']['nameWithOwner']:
                       {
                           "createdAt" : data['repo2']['createdAt'],
                           "stargazers": data['repo2']['stargazers']['totalCount'],
@@ -252,7 +257,6 @@ def parse_repo_rank(data):
                           "totalCommits" :
                           data['repo2']['master']['commit']['history']['totalCount'],
                           "pushedAt" : data['repo2']['pushedAt'],
-                          "diskUsage" : data['repo2']['diskUsage'],
                           "deployments":  data['repo2']['deployments']['totalCount'],
                           "releases" :  data['repo2']['releases']['totalCount'],
                           "issuesOpen":  data['repo2']['issuesOpen']['totalCount'],
@@ -263,6 +267,8 @@ def parse_repo_rank(data):
                           "mileOpen": data['repo2']['mileOpen']['totalCount'],
                           "mileClosed": data['repo2']['mileClosed']['totalCount'],
                           "languages" : languages2,
+                          "description" : data['repo2']['description'] != None,
+                          "hasWikiEnabled" : data['repo2']['hasWikiEnabled'],
                           "isArchived" : data['repo2']['isArchived'],
                           "isFork" : data['repo2']['isFork']
                      }
@@ -270,8 +276,7 @@ def parse_repo_rank(data):
 
     return parsed_data
 
-
 if __name__ == '__main__':
-    print(repository_rank("faviouz", "cantina", "makeorbreak-io", "peimi"))
-    #print()
-    #print(user_rank("faviouz", "dedukun"))
+    print(get_repositories("faviouz", "cantina", "makeorbreak-io", "peimi"))
+    print()
+    print(get_users("faviouz", "dedukun"))

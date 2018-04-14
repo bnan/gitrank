@@ -1,12 +1,12 @@
 from pymongo import MongoClient
 import random
-from github import parse_user_rank, user_rank
+
 
 class Mongoloide:
-
     def __init__(self):
         client = MongoClient('mongo', 27017)
         db = client.test_database
+        self.db = client.test_database
         self.comparisons = db.comparisons
         self.rank_history = db.history
         self.users = db.users
@@ -15,7 +15,7 @@ class Mongoloide:
         compA = self.comparisons.find_one({"repo_name":name1})
         compB = self.comparisons.find_one({"repo_name":name2})
 
-        if( compA == None ):
+        if compA == None:
             compA = {"repo_name":name1,
                      "compared_to":[name2,]}
             comp = self.comparisons.insert_one(compA)
@@ -23,45 +23,58 @@ class Mongoloide:
             new_values = compA["compared_to"] + [name2]
             compA = self.comparisons.update_one({"repo_name":name1}, {'$set': {'compared_to': new_values}})
 
-        if( compB == None ):
-            compB = {"repo_name":name2,
-                     "compared_to":[name1,]}
+        if compB == None:
+            compB = {"repo_name":name2, "compared_to":[name1,]}
             comp = self.comparisons.insert_one(compB)
         else:
             new_values = compB["compared_to"] + [name1]
             compB = self.comparisons.update_one({"repo_name":name2}, {'$set': {'compared_to': new_values}})
 
-    def get_related(self, name ):
+    def get_related(self, name):
         comp = self.comparisons.find_one({"repo_name":name})
         i = random.randint(1,len(comp['compared_to'])-1)
         return comp['compared_to'][i]
 
     def get_user(self, name):
-        return self.user.find_one({"user_name":name})
+        return self.users.find_one({"user_name":name})
 
     def store_user(self, name, data):
         #Existig user
-        user = self.user.find_one({"user_name":name})
-        user = self.user.update_one({"user_name":name}, {'$set': {key: value}}, upsert=True)
+        user = self.users.find_one({"user_name":name})
+        for key, value in data.items():
+            user = self.users.update_one({"user_name":name}, {'$set': {key: value}}, upsert=True)
         return user 
         
     def avg(self):
-        avg =  self.user.aggregate(
+        avg =  set([ print(x) for x in self.users.aggregate(
             [
                 {
                     "$group":
                     {
-                        "avgFollowers": { "$avg": "followers" },
-                        "avgfollowing": { "$avg": "following" },
+                        "_id": "null",
+                        "avg_followers": { "$avg": "$followers" },
+                        "avg_following": { "$avg": "$following" },
+                        "avg_issuesOpen": { "$avg": "$issuesOpen" },
+                        "avg_issuesClosed": { "$avg": "$issuesClosed" },
+                        "avg_organizations": { "$avg": "$organizations" },
+                        "avg_pinnedRepositories": { "$avg": "$pinnedRepositories" },
+                        "avg_pullOpen": { "$avg": "$pullOpen" },
+                        "avg_pullClosed": { "$avg": "$pullClosed" },
+                        "avg_pullMerged": { "$avg": "$pullMerged" },
+                        "avg_repositories": { "$avg": "$repositories" },
+                        "avg_repositoriesContributedTo": { "$avg": "$repositoriesContributedTo" },
+                        "avg_starredRepositories": { "$avg": "$starredRepositories" },
+                        "avg_watching": { "$avg": "$watching" },
+                        "avg_bio": { "$avg": "$bio" },
+                        "avg_location": { "$avg": "$location" },
+                        "avg_bio": { "$avg": { "$sum": {"$cond" : [ "$bio", 1, 0 ] }} },
+                        "avg_location": { "$avg": { "$sum": {"$cond" : [ "$location", 1, 0 ] }} },
+                        "avg_company": { "$avg": { "$sum": {"$cond" : [ "$company", 1, 0 ] }} },
                     }
                 }
             ]
-        )
-        print(avg)
+        ) ])
+        return avg
 
 if __name__ == "__main__":
-    user = parse_user_rank(user_rank("ludeed", "faviouz"))
-    mon = MongoClient()
-    mon.store_user(user)
-    mon.avg()
-
+    pass
