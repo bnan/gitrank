@@ -3,6 +3,7 @@ from flask_cors import CORS
 import json
 from pymongo import MongoClient
 from mongoloide import Mongoloide
+from github import parse_user_rank, user_rank
 
 
 app = Flask(__name__)
@@ -38,6 +39,12 @@ def repository(name1, name2):
         'pull_requests': 0,
         'score': 0
     })
+@app.route('/test_mean/', methods=['GET'])
+def test_mean():
+    user = parse_user_rank(user_rank("ludeed", "faviouz"))
+    mon = MongoClient()
+    mon.store_user(user)
+    mon.avg()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=1337)
