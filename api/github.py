@@ -1,12 +1,16 @@
 import requests
 import json
 
+
 url = 'https://api.github.com/graphql'
 api_token = 'a68f7ffae3ee31dd86209dcc5e56be49e9cd974a'
 headers = {'Authorization': f'token {api_token}'}
 
 def query(q):
-    return { "query": q }
+    payload = { "query": q }
+    r = requests.post(url=url, json=payload, headers=headers)
+    data = json.loads(r.text)['data']
+    return data
 
 def author_rank(username):
     return rank_followers(followers) + rank_following(following)
@@ -18,7 +22,6 @@ def rank_following(following):
     return 0
 
 def user_rank(user1,user2):
-
     queryBody = '''
         followers {
           totalCount
@@ -62,8 +65,7 @@ def user_rank(user1,user2):
         location
         company
         createdAt
-        avatarUrl
-        '''
+        avatarUrl'''
 
     q = '''
     {
@@ -75,15 +77,9 @@ def user_rank(user1,user2):
         }
     }''' % (user1, queryBody, user2, queryBody)
 
-    r = requests.post(url=url, json=query(q), headers=headers)
-    json_data = json.loads(r.text)
-
-    return json_data['data']
-
-
+    return query(q)
 
 def repository_rank(user1, repo1, user2, repo2):
-
     queryBody = '''
         createdAt
         stargazers {
@@ -144,8 +140,7 @@ def repository_rank(user1, repo1, user2, repo2):
         isArchived
         isFork
         isMirror
-        isLocked
-        '''
+        isLocked'''
 
     q = '''
     {
@@ -157,11 +152,9 @@ def repository_rank(user1, repo1, user2, repo2):
       }
     }''' % (user1, repo1, queryBody, user2, repo2, queryBody)
 
-    r = requests.post(url=url, json=query(q), headers=headers)
-    json_data = json.loads(r.text)
-
-    return json_data['data']
+    return query(q)
 
 if __name__ == '__main__':
-	print(repository_rank("faviouz", "cantina", "makeorbreak-io", "peimi"))
-	print(user_rank("faviouz", "dedukun"))
+    print(repository_rank("faviouz", "cantina", "makeorbreak-io", "peimi"))
+    print()
+    print(user_rank("faviouz", "dedukun"))
