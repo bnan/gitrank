@@ -228,6 +228,8 @@ def parse_users(data):
 def parse_repositories(data):
     languages1 = [t['node']['name'] for t in data['repo1']['languages']['edges']]
     languages2 = [t['node']['name'] for t in data['repo2']['languages']['edges']]
+    license1 = data['repo1']['licenseInfo']['name'] if data['repo1']['licenseInfo'] else 'N/A'
+    license2 = data['repo2']['licenseInfo']['name'] if data['repo2']['licenseInfo'] else 'N/A'
 
     parsed_data = [
         {
@@ -251,7 +253,7 @@ def parse_repositories(data):
             "mileOpen": data['repo1']['mileOpen']['totalCount'],
             "mileClosed": data['repo1']['mileClosed']['totalCount'],
             "languages" : languages1,
-            "license" : data['repo1']['licenseInfo'],
+            "license" : license1,
             "description" : data['repo1']['description'],
             "hasWikiEnabled" : data['repo1']['hasWikiEnabled'],
             "isArchived" : data['repo1']['isArchived'],
@@ -279,7 +281,7 @@ def parse_repositories(data):
             "mileOpen": data['repo2']['mileOpen']['totalCount'],
             "mileClosed": data['repo2']['mileClosed']['totalCount'],
             "languages" : languages2,
-            "license" : data['repo2']['licenseInfo'],
+            "license" : license2,
             "description" : data['repo2']['description'],
             "hasWikiEnabled" : data['repo2']['hasWikiEnabled'],
             "isArchived" : data['repo2']['isArchived'],
