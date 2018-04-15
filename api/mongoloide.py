@@ -49,12 +49,11 @@ class Mongoloide:
 
     def set_score(self, name, score):
         comp = self.comparisons.find_one({"repo_name":name })
-        new_scores = comp["history"]+[score]
+        new_scores = comp["history"]+[(score,datetime.datetime.now())]
         comp = self.comparisons.update_one({"repo_name":name }, {'$set': {'history': new_scores}})
 
     def get_history(self, name):
         comp = self.comparisons.find_one({"repo_name":name })
-
         return comp["history"]
 
     def get_user(self, name):
