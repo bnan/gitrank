@@ -54,6 +54,7 @@ class Mongoloide:
 
     def get_history(self, name):
         comp = self.comparisons.find_one({"repo_name":name })
+
         return comp["history"]
 
     def get_user(self, name):
@@ -151,7 +152,9 @@ class Mongoloide:
         return self.scores.find_one({"user_name":name})
 
     def store_score(self, name, score):
+        self.set_score(name, score)
         score = self.scores.update_one({"user_name":name}, {'$set': {"score": score}}, upsert=True)
+
         return score
 
     def scores_average(self):
