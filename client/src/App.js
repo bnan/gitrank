@@ -201,87 +201,87 @@ class App extends Component {
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Created At</th>
+                                    <th scope="row">Created</th>
                                     {this.state.repos.map((repo, index) => (
                                         <td key={index}>{repo.createdAt}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Last Updated At</th>
+                                    <th scope="row">Last Updated</th>
                                     {this.state.repos.map((repo, index) => (
                                         <td className={this.isBestAtMetric(repo, (repo) => repo.pushedAt) ? "table-success" : "table-danger"} key={index}>{repo.pushedAt}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Stars</th>
+                                    <th scope="row">Stars <br/><small className="font-weight-normal">Average: {this.state.averages['avg_stargazers']}</small></th>
                                     {this.state.repos.map((repo, index) => (
                                         <td className={this.isBestAtMetric(repo, (repo) => repo.stargazers) ? "table-success" : "table-danger"} key={index}>{repo.stargazers}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Watchers</th>
+                                    <th scope="row">Watchers <br/><small className="font-weight-normal">Average: {this.state.averages['avg_watchers']}</small></th>
                                     {this.state.repos.map((repo, index) => (
                                         <td className={this.isBestAtMetric(repo, (repo) => repo.watchers) ? "table-success" : "table-danger"} key={index}>{repo.watchers}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Forks</th>
+                                    <th scope="row">Forks <br/><small className="font-weight-normal">Average: {this.state.averages['avg_forkCount']}</small></th>
                                     {this.state.repos.map((repo, index) => (
                                         <td className={this.isBestAtMetric(repo, (repo) => repo.forkCount) ? "table-success" : "table-danger"} key={index}>{repo.forkCount}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Commits</th>
+                                    <th scope="row">Commits <br/><small className="font-weight-normal">Average: {this.state.averages['avg_totalCommits']}</small></th>
                                     {this.state.repos.map((repo, index) => (
                                         <td className={this.isBestAtMetric(repo, (repo) => repo.totalCommits) ? "table-success" : "table-danger"} key={index}>{repo.totalCommits}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Deployments</th>
+                                    <th scope="row">Deployments <br/><small className="font-weight-normal">Average: {this.state.averages['avg_deployments']}</small></th>
                                     {this.state.repos.map((repo, index) => (
                                         <td className={this.isBestAtMetric(repo, (repo) => repo.deployments) ? "table-success" : "table-danger"} key={index}>{repo.deployments}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Releases</th>
+                                    <th scope="row">Releases <br/><small className="font-weight-normal">Average: {this.state.averages['avg_releases']}</small></th>
                                     {this.state.repos.map((repo, index) => (
                                         <td className={this.isBestAtMetric(repo, (repo) => repo.releases) ? "table-success" : "table-danger"} key={index}>{repo.releases}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Issues</th>
+                                    <th scope="row">Issues <br/><small className="font-weight-normal">Average: {this.state.averages['avg_issuesOpen'] + this.state.averages['avg_issuesClosed']}</small></th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, (repo) => repo.issuesOpen/(repo.issuesClosed+repo.issuesOpen)) ? "table-success" : "table-danger"} key={index}>{repo.issuesOpen} open, {repo.issuesClosed} closed</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.issuesClosed+repo.issuesOpen) ? "table-success" : "table-danger"} key={index}>{repo.issuesOpen + repo.issuesClosed}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Pull Requests</th>
+                                    <th scope="row">Pull Requests <br/><small className="font-weight-normal">Average: {this.state.averages['avg_pullOpen'] + this.state.averages['avg_pullClosed'] + this.state.averages['avg_pullMerged']}</small></th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, (repo) => repo.pullOpen/(repo.pullOpen+repo.pullClosed+repo.pullMerged)) ? "table-success" : "table-danger"} key={index}>{repo.pullOpen} open, {repo.pullMerged} merged, {repo.pullClosed} closed</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.pullOpen+repo.pullClosed+repo.pullMerged) ? "table-success" : "table-danger"} key={index}>{repo.pullOpen + repo.pullMerged + repo.pullClosed}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Milestones</th>
+                                    <th scope="row">Milestones <br/><small className="font-weight-normal">Average: {this.state.averages['avg_mileOpen'] + this.state.averages['avg_mileClosed']}</small></th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, (repo) => repo.mileOpen/(repo.mileOpen+repo.mileClosed)) ? "table-success" : "table-danger"} key={index}>{repo.mileOpen} open, {repo.mileClosed} closed</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.mileOpen+repo.mileClosed) ? "table-success" : "table-danger"} key={index}>{repo.mileOpen+repo.mileClosed}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Branches</th>
+                                    <th scope="row">Branches <br/><small className="font-weight-normal">Average: {this.state.averages['avg_branches']}</small></th>
                                     {this.state.repos.map((repo, index) => (
                                         <td className={this.isBestAtMetric(repo, (repo) => repo.branches) ? "table-success" : "table-danger"} key={index}>{repo.branches}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">Tags</th>
+                                    <th scope="row">Tags <br/><small className="font-weight-normal">Average: {this.state.averages['avg_tags']}</small></th>
                                     {this.state.repos.map((repo, index) => (
                                         <td className={this.isBestAtMetric(repo, (repo) => repo.tags) ? "table-success" : "table-danger"} key={index}>{repo.tags}</td>
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th scope="row">GitRank</th>
+                                    <th scope="row">GitRank<br/><small className="font-weight-normal">Average: {this.state.averages['avg_score']}</small></th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, (repo) => repo.score) ? "bg-success" : "bg-danger"} key={index}>{repo.score}</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.score) ? "bg-success" : "bg-danger"} key={index}>{repo.score.toFixed(3)}</td>
                                     ))}
                                 </tr>
                             </tbody>

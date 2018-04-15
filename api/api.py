@@ -26,15 +26,17 @@ def repository(name1, name2):
         mongo.store_repo(repositories[0]["name"], repositories[0])
         mongo.store_repo(repositories[1]["name"], repositories[1])
         averages = mongo.repos_average()
-        averages = {k:round(v) if isinstance(v, (int, float)) else v for k,v in averages.items()}
         repositories[0]['score']  = github.calc_repository_rank(repositories[0], averages)
         repositories[1]['score']  = github.calc_repository_rank(repositories[1], averages)
+        mongo.store_score(repositories[0]["name"], repositories[0]['score'])
+        mongo.store_score(repositories[1]["name"], repositories[1]['score'])
+        averages.update(mongo.scores_average())
+        averages = {k:float('{0:.2f}'.format(v)) if isinstance(v, (int, float)) else v for k,v in averages.items()}
         results = {
             'repositories': repositories,
             'suggestions': mongo.get_related(name1, name2),
             'averages': averages
         }
-        print(results)
         return jsonify(**{'error': False, 'message': 'success', 'results': results })
     except Exception as e:
         raise e

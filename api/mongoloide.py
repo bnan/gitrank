@@ -14,7 +14,7 @@ class Mongoloide:
         self.comparisons = db.comparisons
         self.users = db.users
         self.repos = db.repos
-        self.score = db.scores
+        self.scores = db.scores
 
 
     def add_comparison(self, name1, name2):
@@ -151,7 +151,6 @@ class Mongoloide:
         return self.scores.find_one({"user_name":name})
 
     def store_score(self, name, score):
-        score = self.scores.find_one({"user_name":value})
         score = self.scores.update_one({"user_name":name}, {'$set': {"score": score}}, upsert=True)
         return score
 
