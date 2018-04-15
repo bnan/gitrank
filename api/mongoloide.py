@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from collections import Counter
 import random
 
 
@@ -36,8 +37,8 @@ class Mongoloide:
             compA = self.comparisons.find_one({"repo_name":name1})
             compB = self.comparisons.find_one({"repo_name":name2})
             related = [x for x in compA['compared_to'] if x != name2] + [x for x in compB['compared_to'] if x != name1]
-            i = random.randint(0,len(related))
-            return related[i]
+            ret = Counter(related).most_common(3);
+            return ret
         except Exception:
             return []
 
