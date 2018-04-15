@@ -142,37 +142,137 @@ class App extends Component {
                     </div>
                 )}
 
+                {this.state.users.length > 0 && (
                 <div className="row">
-                    {this.state.users.map((user, index) => (
-                        <div key={index} className="col-sm-6">
-                            <div className="card">
-                                <div className="card-body">
-                                    <div className="media">
-                                        <img width="64" height="64" className="mr-3" src={user.avatarUrl} alt={user.bio}/>
-                                        <div className="media-body">
-                                            <h5 className="mt-0">{user.name}</h5>
-                                            <p>{user.bio}</p>
-
-                                            <ul>
-                                                <li>{user.followers} followers</li>
-                                                <li>{user.following} following</li>
-                                                <li>{user.issuesOpen} open issues out of {user.issuesClosed + user.issuesOpen}</li>
-                                                <li>{user.watching} watching</li>
-                                                <li>registered since {user.createdAt}</li>
-                                                <li>Score {user.score}</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                    <div className="col-sm-12">
+                        <table style={{background:'white'}} className="table table-bordered">
+                            <thead className="thead-light">
+                                <tr>
+                                    <th scope="col">Metric</th>
+                                    {this.state.users.map((user, index) => (
+                                        <th scope="col" key={index}><img alt={user.name} width={24} height={24} src={user.avatarUrl}/> {user.name}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Bio</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.bio}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Created At</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.createdAt}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Location</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.location}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Company</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.company}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Followers</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.followers}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Following</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.following}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Repositories</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.repositories}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Repositories Contributed To</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.repositoriesContributedTo}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Issues Open</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.issuesOpen}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Issues Closed</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.issuesClosed}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Pull Requests Open</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.pullOpen}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Pull Requests Merged</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.pullMerged}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Pull Requests Closed</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.pullClosed}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Starred Repositories</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.starredRepositories}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Organizations</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.organizations}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Pinned Repositories</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.pinnedRepositories}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">Watching</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.watching}</td>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    <th scope="row">GitRank</th>
+                                    {this.state.users.map((user, index) => (
+                                        <td key={index}>{user.score}</td>
+                                    ))}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+                )}
 
                 {this.state.repos.length > 0 && (
                 <div className="row">
                     <div className="col-sm-12">
-                        <table style={{background:'white'}} className="table table-bordered table-responsive">
+                        <table style={{background:'white'}} className="table table-bordered">
                             <thead className="thead-light">
                                 <tr>
                                     <th scope="col">Metric</th>
