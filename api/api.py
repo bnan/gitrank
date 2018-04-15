@@ -12,33 +12,32 @@ mongo = Mongoloide()
 def user(username1, username2):
     try:
         users = github.get_users(username1, username2)
-        mongo.store_user(users[0]["name"], users[0])
-        mongo.store_user(users[1]["name"], users[1])
-        avg_user = mongo.users_average()
-        return jsonify(**{ 'error': False, 'message': 'success', 'results': users })
+        return jsonify(**{ 'error': False, 'message': 'success', 'results': {'users': users }})
     except Exception as e:
-        return jsonify(**{ 'error': True, 'message': str(e), 'results': [] })
+        return jsonify(**{ 'error': True, 'message': str(e), 'results': {'users': [] }})
 
 @app.route('/api/v1/repository/<name1>/<name2>/', methods=['GET'])
 def repository(name1, name2):
     mongo.add_comparison(name1, name2)
-
-    # Related repo based on the given ones
-    related = mongo.get_related(name1, name2)
     try:
         user1, repo1 = name1.split('.')
         user2, repo2 = name2.split('.')
         repositories = github.get_repositories(user1, repo1, user2, repo2)
         mongo.store_repo(repositories[0]["name"], repositories[0])
         mongo.store_repo(repositories[1]["name"], repositories[1])
-        avg_repo = mongo.repos_average()
-
-        # Calculate repositories rank
-        repositories[0]['score']  = calc_repository_rank(repositories[0],avg_repo)
-        repositories[1]['score']  = calc_repository_rank(repositories[1],avg_repo)
-        return jsonify(**{'error': False, 'message': 'success', 'results': repositories })
+        averages = mongo.repos_average()
+        repositories[0]['score']  = github.calc_repository_rank(repositories[0], averages)
+        repositories[1]['score']  = github.calc_repository_rank(repositories[1], averages)
+        results = {
+            'repositories': repositories,
+            'suggestions': mongo.get_related(name1, name2),
+            'averages': averages
+        }
+        print(results)
+        return jsonify(**{'error': False, 'message': 'success', 'results': results })
     except Exception as e:
-        return jsonify(**{ 'error': True, 'message': str(e), 'results': [] })
+        raise e
+        return jsonify(**{ 'error': True, 'message': str(e), 'results': {} })
 
 
 @app.route('/test_mean/', methods=['GET'])

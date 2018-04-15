@@ -34,11 +34,11 @@ class App extends Component {
         this.setState({ user2: e.target.value })
     }
 
-    isBestAtMetric(repo, prop) {
+    isBestAtMetric(repo, f) {
         let best = true
 
         for (let r of this.state.repos) {
-            if (r[prop] > repo[prop]) {
+            if (f(r) > f(repo)) {
                 best = false
             }
         }
@@ -64,7 +64,7 @@ class App extends Component {
             let response = await fetch(API_URL + '/user/' + user1 + '/' + user2)
             let json = await response.json()
             this.setState({ error: json['error'], loading: false })
-            return json['results']
+            return json['results']['users']
         } catch (error) {
             console.error(error)
         }
@@ -73,23 +73,22 @@ class App extends Component {
     async handleRepoCompare(e) {
         e.preventDefault()
         if (!this.state.repo1 || !this.state.repo2) {
-            this.setState({ users: [], repos: [], error: true, loading: false })
+            this.setState({ users: [], repos: [], suggestions: [], averages: [], error: true, loading: false })
         } else {
-            this.setState({ users: [], repos: [], error: false, loading: true })
-            let repos = await this.getRepositories(this.state.repo1, this.state.repo2)
-            console.log(repos)
-            this.setState({ users: [], repos: repos })
+            this.setState({ users: [], repos: [], suggestions: [], averages: [], error: false, loading: true })
+            let results = await this.getRepositories(this.state.repo1, this.state.repo2)
+            this.setState({ users: [], repos: results['repositories'], suggestions: results['suggestions'], averages: results['averages'] })
         }
     }
 
     async handleUserCompare(e) {
         e.preventDefault()
         if (!this.state.user1 || !this.state.user2) {
-            this.setState({ users: [], repos: [], error: true, loading: false })
+            this.setState({ users: [], repos: [], suggestions: [], averages: [], error: true, loading: false })
         } else {
-            this.setState({ users: [], repos: [], error: false, loading: true })
+            this.setState({ users: [], repos: [], suggestions: [], averages: [], error: false, loading: true})
             let users = await this.getUsers(this.state.user1, this.state.user2)
-            this.setState({ users: users, repos: [] })
+            this.setState({ users: users, repos: [], suggestions: [], averages: [] })
         }
     }
 
@@ -109,6 +108,15 @@ class App extends Component {
                             </div>
                             <button onClick={(e) => this.handleRepoCompare(e)} className="btn btn-primary">Compare</button>
                         </form>
+
+                        {this.state.suggestions && this.state.suggestions.length !== 0 && (
+                            <div className="alert alert-primary" role="alert">
+                                Other people have considered
+                                <ul>
+                                    {this.state.suggestions.map((suggestion, index) => <li><a key={index} href={"https://github.com/"+suggestion.replace('.', '/')}>{suggestion.replace('.', '/')}</a></li>)}
+                                </ul>
+                            </div>
+                        )}
 
                         <p>Compare two GitHub users and see who's best.</p>
                         <form className="form-inline text-center">
@@ -201,79 +209,79 @@ class App extends Component {
                                 <tr>
                                     <th scope="row">Last Updated At</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'pushedAt') ? "table-success" : "table-danger"} key={index}>{repo.pushedAt}</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.pushedAt) ? "table-success" : "table-danger"} key={index}>{repo.pushedAt}</td>
                                     ))}
                                 </tr>
                                 <tr>
                                     <th scope="row">Stars</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'stargazers') ? "table-success" : "table-danger"} key={index}>{repo.stargazers}</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.stargazers) ? "table-success" : "table-danger"} key={index}>{repo.stargazers}</td>
                                     ))}
                                 </tr>
                                 <tr>
                                     <th scope="row">Watchers</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'watchers') ? "table-success" : "table-danger"} key={index}>{repo.watchers}</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.watchers) ? "table-success" : "table-danger"} key={index}>{repo.watchers}</td>
                                     ))}
                                 </tr>
                                 <tr>
                                     <th scope="row">Forks</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'forkCount') ? "table-success" : "table-danger"} key={index}>{repo.forkCount}</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.forkCount) ? "table-success" : "table-danger"} key={index}>{repo.forkCount}</td>
                                     ))}
                                 </tr>
                                 <tr>
                                     <th scope="row">Commits</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'totalCommits') ? "table-success" : "table-danger"} key={index}>{repo.totalCommits}</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.totalCommits) ? "table-success" : "table-danger"} key={index}>{repo.totalCommits}</td>
                                     ))}
                                 </tr>
                                 <tr>
                                     <th scope="row">Deployments</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'deployments') ? "table-success" : "table-danger"} key={index}>{repo.deployments}</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.deployments) ? "table-success" : "table-danger"} key={index}>{repo.deployments}</td>
                                     ))}
                                 </tr>
                                 <tr>
                                     <th scope="row">Releases</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'releases') ? "table-success" : "table-danger"} key={index}>{repo.releases}</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.releases) ? "table-success" : "table-danger"} key={index}>{repo.releases}</td>
                                     ))}
                                 </tr>
                                 <tr>
                                     <th scope="row">Issues</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'issuesOpen') ? "table-success" : "table-danger"} key={index}>{repo.issuesOpen} open, {repo.issuesClosed} closed</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.issuesOpen/(repo.issuesClosed+repo.issuesOpen)) ? "table-success" : "table-danger"} key={index}>{repo.issuesOpen} open, {repo.issuesClosed} closed</td>
                                     ))}
                                 </tr>
                                 <tr>
                                     <th scope="row">Pull Requests</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'pullOpen') ? "table-success" : "table-danger"} key={index}>{repo.pullOpen} open, {repo.pullMerged} merged, {repo.pullClosed} closed</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.pullOpen/(repo.pullOpen+repo.pullClosed+repo.pullMerged)) ? "table-success" : "table-danger"} key={index}>{repo.pullOpen} open, {repo.pullMerged} merged, {repo.pullClosed} closed</td>
                                     ))}
                                 </tr>
                                 <tr>
                                     <th scope="row">Milestones</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'mileClosed') ? "table-success" : "table-danger"} key={index}>{repo.mileOpen} open, {repo.mileClosed} closed</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.mileOpen/(repo.mileOpen+repo.mileClosed)) ? "table-success" : "table-danger"} key={index}>{repo.mileOpen} open, {repo.mileClosed} closed</td>
                                     ))}
                                 </tr>
                                 <tr>
                                     <th scope="row">Branches</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'branches') ? "table-success" : "table-danger"} key={index}>{repo.branches}</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.branches) ? "table-success" : "table-danger"} key={index}>{repo.branches}</td>
                                     ))}
                                 </tr>
                                 <tr>
                                     <th scope="row">Tags</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'tags') ? "table-success" : "table-danger"} key={index}>{repo.tags}</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.tags) ? "table-success" : "table-danger"} key={index}>{repo.tags}</td>
                                     ))}
                                 </tr>
                                 <tr>
                                     <th scope="row">GitRank</th>
                                     {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestAtMetric(repo, 'score') ? "bg-success" : "bg-danger"} key={index}>{repo.score}</td>
+                                        <td className={this.isBestAtMetric(repo, (repo) => repo.score) ? "bg-success" : "bg-danger"} key={index}>{repo.score}</td>
                                     ))}
                                 </tr>
                             </tbody>

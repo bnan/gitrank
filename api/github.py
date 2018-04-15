@@ -433,8 +433,6 @@ def calc_repository_rank(data, avg_repo):
 
             par = math.log(param)
 
-            par = param / avg_repo["avg_"+field]
-
             # Sigmoid func
             val = math.exp(par) / (math.exp(par) + 1)
 
@@ -455,10 +453,8 @@ def calc_repository_rank(data, avg_repo):
             par = 0
             if field == "createdAt":
                 par = math.log(t_diff)
-
-                par = param / avg_repo["avg_"+field]
             else:
-                par = avg_repo["avg_"+field] / t_diff
+                par = 1 / t_diff
 
             # Sigmoid func
             val = math.exp(par) / (math.exp(par) + 1)

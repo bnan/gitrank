@@ -40,7 +40,7 @@ class Mongoloide:
             compA = self.comparisons.find_one({"repo_name":name1})
             compB = self.comparisons.find_one({"repo_name":name2})
             related = [x for x in compA['compared_to'] if x != name2] + [x for x in compB['compared_to'] if x != name1]
-            ret = Counter(related).most_common(3);
+            ret = [x for (x,y) in Counter(related).most_common(3)]
             return ret
         except Exception:
             return []
