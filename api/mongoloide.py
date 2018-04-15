@@ -1,6 +1,9 @@
 from pymongo import MongoClient
 from collections import Counter
 import random
+import json
+import time
+import dateutil
 
 
 class Mongoloide:
@@ -61,7 +64,7 @@ class Mongoloide:
         return user
 
     def users_average(self):
-        avg =  set([ print(x) for x in self.users.aggregate(
+        avg =  ([ x for x in self.users.aggregate(
             [
                 {
                     "$group":
@@ -79,11 +82,12 @@ class Mongoloide:
                         "avg_repositories": { "$avg": "$repositories" },
                         "avg_repositoriesContributedTo": { "$avg": "$repositoriesContributedTo" },
                         "avg_starredRepositories": { "$avg": "$starredRepositories" },
-                        "avg_watching": { "$avg": "$watching" },
+                        "avg_watching": { "$avg": "$watching" }
                     }
                 }
             ]
-        ) ])
+        ) ])[0]
+
         return avg
 
 
@@ -93,11 +97,15 @@ class Mongoloide:
     def store_repo(self, name, data):
         repo = self.repos.find_one({"repo_name":name})
         for key, value in data.items():
-            repo = self.repos.update_one({"repo_name":name}, {'$set': {key: value}}, upsert=True)
+            if key != "createdAt" and key != "pushedAt":
+                repo = self.repos.update_one({"repo_name":name}, {'$set': {key: value}}, upsert=True)
+            else:
+                print(value)
+                repo = self.repos.update_one({"repo_name":name}, {'$set': {key: int(time.mktime(dateutil.parser.parse(value).timetuple()))}}, upsert=True)
         return repo
 
     def repos_average(self):
-        avg =  set([ print(x) for x in self.repos.aggregate(
+        avg =  ([ x for x in self.repos.aggregate(
             [
                 {
                     "$group":
@@ -121,10 +129,14 @@ class Mongoloide:
                         "avg_mileOpen":     { "$avg": "$mileOpen" },
                         "avg_mileClosed":   { "$avg": "$mileClosed" },
                         "avg_languages":    { "$avg": "$languages" },
-
+                        "avg_createdAt":    { "$avg": "$createdAt" },
+                        "avg_pushedAt":     { "$avg": "$pushedAt" }
                     }
                 }
             ]
-        ) ])
+        )])[0]
+
+        print(avg)
+
         return avg
 

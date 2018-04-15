@@ -10,6 +10,8 @@ mongo = Mongoloide()
 
 @app.route('/api/v1/user/<username1>/<username2>/', methods=['GET'])
 def user(username1, username2):
+    avg_user = mongo.users_average()
+
     users = github.get_users(username1, username2)
     try:
         return jsonify(**{ 'error': False, 'message': 'success', 'results': users })
@@ -22,6 +24,8 @@ def repository(name1, name2):
 
     # Related repo based on the given ones
     related = mongo.get_related(name1, name2)
+
+    avg_repo = mongo.repos_average()
     try:
         user1, repo1 = name1.split('.')
         user2, repo2 = name2.split('.')
