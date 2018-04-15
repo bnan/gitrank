@@ -219,9 +219,6 @@ def parse_users(data):
         }
     ]
 
-    # Calculate users rank
-    parsed_data[0]['score']  = calc_user_rank(parsed_data[0])
-    parsed_data[1]['score']  = calc_user_rank(parsed_data[1])
     return parsed_data
 
 # Function that parse the data from the repositories request to be easier to digest
@@ -293,7 +290,7 @@ def parse_repositories(data):
     return parsed_data
 
 # Calculate User rank
-def calc_user_rank(data):
+def calc_user_rank(data,avg_user):
     # name                           | x
     # followers                      | +
     # following                      | -
@@ -345,12 +342,15 @@ def calc_user_rank(data):
             if param == 0:
                 continue
 
-            par = math.log(param)
+            avg_val = avg_user["avg_"+field] * 1.125
 
-            # Sigmoid func
-            val = math.exp(par) / (math.exp(par) + 1)
+            par = param/avg_val
 
-            score = score + (weights[idx] * val)
+            if par > 1:
+                par = 1
+
+            score = score + (weights[idx] * par)
+
         elif type(param) == bool:
             score = score + (weights[idx] if param else 0)
         else: # Date - str
@@ -364,12 +364,15 @@ def calc_user_rank(data):
 
             t_diff = now - val
 
-            par = math.log(t_diff)
+            avg_val = avg_user["avg_"+field]
+            t_diff_avg = (now - avg_val)
 
-            # Sigmoid func
-            val = math.exp(par) / (math.exp(par) + 1)
+            par = t_diff / t_diff_avg
 
-            score = score + (weights[idx] * val)
+            if par > 1:
+                par = 1
+
+            score = score + (weights[idx] * (par))
 
     return score
 
@@ -394,7 +397,7 @@ def calc_repository_rank(data, avg_repo):
     # pullMerged                    | +++
     # mileOpen                      |
     # mileClosed                    |
-    # languages (number)            |
+    # languages (number)            | x
     # license                       |
     # description                   | -
     # hasWikiEnabled                | -
@@ -403,13 +406,13 @@ def calc_repository_rank(data, avg_repo):
     # score                         | x
 
     # List of weights each component has on the rank
-    weights = [ 4/111, 6/111, 6/111, 6/111, 5/111, 5/111, 7/111, 6/111, 6/111, 6/111, 5/111, 5/111, 6/111, 6/111, 7/111, 4/111, 4/111, 4/111, 4/111, 3/111, 3/111, 1/111, 2/111]
+    weights = [ 4/107, 6/107, 6/107, 6/107, 5/107, 5/107, 7/107, 6/107, 6/107, 6/107, 5/107, 5/107, 6/107, 6/107, 7/107, 4/107, 4/107, 4/107, 3/107, 3/107, 1/107, 2/107]
     score = 0
     idx = -1
 
     for field in data:
         # Skip unwanted params
-        if field == "name":
+        if field == "name" or field == "languages":
             continue
         if field == "score":
             break;
@@ -418,8 +421,6 @@ def calc_repository_rank(data, avg_repo):
         # Parsing some of the params so that they can be used in the calc of the score
         if field == "description" or field == "license":
             param = data[field] != None
-        elif field == "languages":
-            param = len(data[field])
         else:
             param = data[field]
 
@@ -431,12 +432,15 @@ def calc_repository_rank(data, avg_repo):
             if param == 0:
                 continue
 
-            par = math.log(param)
+            avg_val = avg_repo["avg_"+field] * 1.125
 
-            # Sigmoid func
-            val = math.exp(par) / (math.exp(par) + 1)
+            par = param/avg_val
 
-            score = score + (weights[idx] * val)
+            if par > 1:
+                par = 1
+
+            score = score + (weights[idx] * par)
+
         elif type(param) == bool:
             score = score + (weights[idx] if param else 0)
         else: # Date - str
@@ -448,18 +452,22 @@ def calc_repository_rank(data, avg_repo):
 
             now = int(time.time())
 
-            t_diff = now - val
+            t_diff = (now - val)  # Get time diff in days
+
+            avg_val = avg_repo["avg_"+field]
+            t_diff_avg = (now - avg_val)
 
             par = 0
             if field == "createdAt":
-                par = math.log(t_diff)
+                par = t_diff / t_diff_avg
+
             else:
-                par = 1 / t_diff
+                par = t_diff_avg / t_diff
 
-            # Sigmoid func
-            val = math.exp(par) / (math.exp(par) + 1)
+            if par > 1:
+                par = 1
 
-            score = score + (weights[idx] * val)
+            score = score + (weights[idx] * (par))
 
     return score
 

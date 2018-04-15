@@ -12,6 +12,11 @@ mongo = Mongoloide()
 def user(username1, username2):
     try:
         users = github.get_users(username1, username2)
+        mongo.store_user(users[0]['name'],users[0])
+        mongo.store_user(users[1]['name'],users[1])
+        averages = mongo.users_average()
+        users[0]['score']  = github.calc_user_rank(users[0], averages)
+        users[1]['score']  = github.calc_user_rank(users[1], averages)
         return jsonify(**{ 'error': False, 'message': 'success', 'results': {'users': users }})
     except Exception as e:
         return jsonify(**{ 'error': True, 'message': str(e), 'results': {'users': [] }})
