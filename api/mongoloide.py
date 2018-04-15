@@ -60,7 +60,11 @@ class Mongoloide:
     def store_user(self, name, data):
         user = self.users.find_one({"user_name":name})
         for key, value in data.items():
-            user = self.users.update_one({"user_name":name}, {'$set': {key: value}}, upsert=True)
+            if key != "createdAt" and key != "pushedAt":
+                user = self.users.update_one({"user_name":name}, {'$set': {key: value}}, upsert=True)
+            else:
+                value = int(time.mktime(dateutil.parser.parse(value).timetuple()))
+                user = self.users.update_one({"user_name":name}, {'$set': {key: value}}, upsert=True)
         return user
 
     def users_average(self):
@@ -82,7 +86,8 @@ class Mongoloide:
                         "avg_repositories": { "$avg": "$repositories" },
                         "avg_repositoriesContributedTo": { "$avg": "$repositoriesContributedTo" },
                         "avg_starredRepositories": { "$avg": "$starredRepositories" },
-                        "avg_watching": { "$avg": "$watching" }
+                        "avg_watching": { "$avg": "$watching" },
+                        "avg_createdAt":    { "$avg": "$createdAt" }
                     }
                 }
             ]
@@ -100,8 +105,8 @@ class Mongoloide:
             if key != "createdAt" and key != "pushedAt":
                 repo = self.repos.update_one({"repo_name":name}, {'$set': {key: value}}, upsert=True)
             else:
-                print(value)
-                repo = self.repos.update_one({"repo_name":name}, {'$set': {key: int(time.mktime(dateutil.parser.parse(value).timetuple()))}}, upsert=True)
+                value = int(time.mktime(dateutil.parser.parse(value).timetuple()))
+                repo = self.repos.update_one({"repo_name":name}, {'$set': {key: value}}, upsert=True)
         return repo
 
     def repos_average(self):
@@ -128,15 +133,12 @@ class Mongoloide:
                         "avg_pullMerged":   { "$avg": "$pullMerged" },
                         "avg_mileOpen":     { "$avg": "$mileOpen" },
                         "avg_mileClosed":   { "$avg": "$mileClosed" },
-                        "avg_languages":    { "$avg": "$languages" },
                         "avg_createdAt":    { "$avg": "$createdAt" },
                         "avg_pushedAt":     { "$avg": "$pushedAt" }
                     }
                 }
             ]
         )])[0]
-
-        print(avg)
 
         return avg
 

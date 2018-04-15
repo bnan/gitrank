@@ -290,9 +290,6 @@ def parse_repositories(data):
         }
     ]
 
-    # Calculate repositories rank
-    parsed_data[0]['score']  = calc_repository_rank(parsed_data[0])
-    parsed_data[1]['score']  = calc_repository_rank(parsed_data[1])
     return parsed_data
 
 # Calculate User rank
@@ -378,7 +375,7 @@ def calc_user_rank(data):
 
 
 # Calculate Repository rank
-def calc_repository_rank(data):
+def calc_repository_rank(data, avg_repo):
     # name                          | x
     # createdAt                     |
     # stargazers                    | ++
@@ -436,6 +433,8 @@ def calc_repository_rank(data):
 
             par = math.log(param)
 
+            par = param / avg_repo["avg_"+field]
+
             # Sigmoid func
             val = math.exp(par) / (math.exp(par) + 1)
 
@@ -456,8 +455,10 @@ def calc_repository_rank(data):
             par = 0
             if field == "createdAt":
                 par = math.log(t_diff)
+
+                par = param / avg_repo["avg_"+field]
             else:
-                par = 1 / t_diff
+                par = avg_repo["avg_"+field] / t_diff
 
             # Sigmoid func
             val = math.exp(par) / (math.exp(par) + 1)
