@@ -1,7 +1,16 @@
 import React, { Component } from 'react'
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
 import './App.css'
 
 const API_URL = 'http://localhost:1337/api/v1'
+
+function merge(a) {
+    let m = []
+    a.forEach((e, i) => {
+      m.push(Object.assign({}, e, a[i]));
+    })
+    return m
+}
 
 class App extends Component {
     constructor(props) {
@@ -10,6 +19,7 @@ class App extends Component {
             users: [],
             repos: [],
             suggestions: [],
+            history: [],
             repo1: null,
             repo2: null,
             user1: null,
@@ -85,22 +95,22 @@ class App extends Component {
     async handleRepoCompare(e) {
         e.preventDefault()
         if (!this.state.repo1 || !this.state.repo2) {
-            this.setState({ users: [], repos: [], suggestions: [], averages: [], error: true, loading: false })
+            this.setState({ history: [], users: [], repos: [], suggestions: [], averages: [], error: true, loading: false })
         } else {
-            this.setState({ users: [], repos: [], suggestions: [], averages: [], error: false, loading: true })
+            this.setState({ history: [], users: [], repos: [], suggestions: [], averages: [], error: false, loading: true })
             let results = await this.getRepositories(this.state.repo1, this.state.repo2)
-            this.setState({ users: [], repos: results['repositories'], suggestions: results['suggestions'], averages: results['averages'] })
+            this.setState({ history: merge(results['history']), users: [], repos: results['repositories'], suggestions: results['suggestions'], averages: results['averages'] })
         }
     }
 
     async handleUserCompare(e) {
         e.preventDefault()
         if (!this.state.user1 || !this.state.user2) {
-            this.setState({ users: [], repos: [], suggestions: [], averages: [], error: true, loading: false })
+            this.setState({ history: [], users: [], repos: [], suggestions: [], averages: [], error: true, loading: false })
         } else {
-            this.setState({ users: [], repos: [], suggestions: [], averages: [], error: false, loading: true})
+            this.setState({ history: [], users: [], repos: [], suggestions: [], averages: [], error: false, loading: true})
             let users = await this.getUsers(this.state.user1, this.state.user2)
-            this.setState({ users: users, repos: [], suggestions: [], averages: [] })
+            this.setState({ history: [], users: users, repos: [], suggestions: [], averages: [] })
         }
     }
 
@@ -125,7 +135,7 @@ class App extends Component {
                             <div className="alert alert-primary" role="alert">
                                 Other people have also compared
                                 <ul>
-                                    {this.state.suggestions.map((suggestion, index) => <li><a key={index} href={"https://github.com/"+suggestion.replace('.', '/')}>{suggestion.replace('.', '/')}</a></li>)}
+                                    {this.state.suggestions.map((suggestion, index) => <li key={index}><a href={"https://github.com/"+suggestion.replace('.', '/')}>{suggestion.replace('.', '/')}</a></li>)}
                                 </ul>
                             </div>
                         )}
@@ -282,146 +292,186 @@ class App extends Component {
                 )}
 
                 {this.state.repos.length > 0 && (
-                <div className="row">
-                    <div className="col-sm-12">
-                        <table style={{background:'white'}} className="table table-bordered">
-                            <thead className="thead-light">
-                                <tr>
-                                    <th scope="col">Metric</th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <th scope="col" key={index}>{repo.name}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <th scope="row">Description</th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td key={index}>{repo.description}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Languages</th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td key={index}>{repo.languages.join(', ')}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">License</th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td key={index}>{repo.license}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Created</th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td key={index}>{repo.createdAt}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Last Updated</th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.pushedAt) ? "table-success" : "table-danger"} key={index}>{repo.pushedAt}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Stars <br/><small className="font-weight-normal">Average: {this.state.averages['avg_stargazers']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.stargazers) ? "table-success" : "table-danger"} key={index}>{repo.stargazers}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Watchers <br/><small className="font-weight-normal">Average: {this.state.averages['avg_watchers']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.watchers) ? "table-success" : "table-danger"} key={index}>{repo.watchers}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Forks <br/><small className="font-weight-normal">Average: {this.state.averages['avg_forkCount']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.forkCount) ? "table-success" : "table-danger"} key={index}>{repo.forkCount}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Commits <br/><small className="font-weight-normal">Average: {this.state.averages['avg_totalCommits']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.totalCommits) ? "table-success" : "table-danger"} key={index}>{repo.totalCommits}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Deployments <br/><small className="font-weight-normal">Average: {this.state.averages['avg_deployments']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.deployments) ? "table-success" : "table-danger"} key={index}>{repo.deployments}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Releases <br/><small className="font-weight-normal">Average: {this.state.averages['avg_releases']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.releases) ? "table-success" : "table-danger"} key={index}>{repo.releases}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Issues Open<br/><small className="font-weight-normal">Average: {this.state.averages['avg_issuesOpen']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.issuesOpen) ? "table-success" : "table-danger"} key={index}>{repo.issuesOpen}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Issues Closed<br/><small className="font-weight-normal">Average: {this.state.averages['avg_issuesClosed']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.issuesClosed) ? "table-success" : "table-danger"} key={index}>{repo.issuesClosed}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">PR Open<br/><small className="font-weight-normal">Average: {this.state.averages['avg_pullOpen']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.pullOpen) ? "table-success" : "table-danger"} key={index}>{repo.pullOpen}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">PR Closed<br/><small className="font-weight-normal">Average: {this.state.averages['avg_pullClosed']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.pullClosed) ? "table-success" : "table-danger"} key={index}>{repo.pullClosed}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">PR Merged<br/><small className="font-weight-normal">Average: {this.state.averages['avg_pullMerged']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.pullMerged) ? "table-success" : "table-danger"} key={index}>{repo.pullMerged}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Milestones Open<br/><small className="font-weight-normal">Average: {this.state.averages['avg_mileOpen']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.mileOpen) ? "table-success" : "table-danger"} key={index}>{repo.mileOpen}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Milestones Closed<br/><small className="font-weight-normal">Average: {this.state.averages['avg_mileClosed']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.mileClosed) ? "table-success" : "table-danger"} key={index}>{repo.mileClosed}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Branches <br/><small className="font-weight-normal">Average: {this.state.averages['avg_branches']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.branches) ? "table-success" : "table-danger"} key={index}>{repo.branches}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">Tags <br/><small className="font-weight-normal">Average: {this.state.averages['avg_tags']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.tags) ? "table-success" : "table-danger"} key={index}>{repo.tags}</td>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th scope="row">GitRank<br/><small className="font-weight-normal">Average: {this.state.averages['avg_score']}</small></th>
-                                    {this.state.repos.map((repo, index) => (
-                                        <td className={this.isBestRepoAtMetric(repo, (repo) => repo.score) ? "bg-success" : "bg-danger"} key={index}>{repo.score.toFixed(3)}</td>
-                                    ))}
-                                </tr>
-                            </tbody>
-                        </table>
+                <div>
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <table style={{background:'white'}} className="table table-bordered">
+                                <thead className="thead-light">
+                                    <tr>
+                                        <th scope="col">Metric</th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <th scope="col" key={index}>{repo.name}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">Description</th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td key={index}>{repo.description}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Languages</th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td key={index}>{repo.languages.join(', ')}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">License</th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td key={index}>{repo.license}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Created</th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td key={index}>{repo.createdAt}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Last Updated</th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.pushedAt) ? "table-success" : "table-danger"} key={index}>{repo.pushedAt}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Stars <br/><small className="font-weight-normal">Average: {this.state.averages['avg_stargazers']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.stargazers) ? "table-success" : "table-danger"} key={index}>{repo.stargazers}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Watchers <br/><small className="font-weight-normal">Average: {this.state.averages['avg_watchers']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.watchers) ? "table-success" : "table-danger"} key={index}>{repo.watchers}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Forks <br/><small className="font-weight-normal">Average: {this.state.averages['avg_forkCount']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.forkCount) ? "table-success" : "table-danger"} key={index}>{repo.forkCount}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Commits <br/><small className="font-weight-normal">Average: {this.state.averages['avg_totalCommits']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.totalCommits) ? "table-success" : "table-danger"} key={index}>{repo.totalCommits}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Deployments <br/><small className="font-weight-normal">Average: {this.state.averages['avg_deployments']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.deployments) ? "table-success" : "table-danger"} key={index}>{repo.deployments}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Releases <br/><small className="font-weight-normal">Average: {this.state.averages['avg_releases']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.releases) ? "table-success" : "table-danger"} key={index}>{repo.releases}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Issues Open<br/><small className="font-weight-normal">Average: {this.state.averages['avg_issuesOpen']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.issuesOpen) ? "table-success" : "table-danger"} key={index}>{repo.issuesOpen}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Issues Closed<br/><small className="font-weight-normal">Average: {this.state.averages['avg_issuesClosed']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.issuesClosed) ? "table-success" : "table-danger"} key={index}>{repo.issuesClosed}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">PR Open<br/><small className="font-weight-normal">Average: {this.state.averages['avg_pullOpen']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.pullOpen) ? "table-success" : "table-danger"} key={index}>{repo.pullOpen}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">PR Closed<br/><small className="font-weight-normal">Average: {this.state.averages['avg_pullClosed']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.pullClosed) ? "table-success" : "table-danger"} key={index}>{repo.pullClosed}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">PR Merged<br/><small className="font-weight-normal">Average: {this.state.averages['avg_pullMerged']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.pullMerged) ? "table-success" : "table-danger"} key={index}>{repo.pullMerged}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Milestones Open<br/><small className="font-weight-normal">Average: {this.state.averages['avg_mileOpen']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.mileOpen) ? "table-success" : "table-danger"} key={index}>{repo.mileOpen}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Milestones Closed<br/><small className="font-weight-normal">Average: {this.state.averages['avg_mileClosed']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.mileClosed) ? "table-success" : "table-danger"} key={index}>{repo.mileClosed}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Branches <br/><small className="font-weight-normal">Average: {this.state.averages['avg_branches']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.branches) ? "table-success" : "table-danger"} key={index}>{repo.branches}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Tags <br/><small className="font-weight-normal">Average: {this.state.averages['avg_tags']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.tags) ? "table-success" : "table-danger"} key={index}>{repo.tags}</td>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">GitRank<br/><small className="font-weight-normal">Average: {this.state.averages['avg_score']}</small></th>
+                                        {this.state.repos.map((repo, index) => (
+                                            <td className={this.isBestRepoAtMetric(repo, (repo) => repo.score) ? "bg-success" : "bg-danger"} key={index}>{repo.score.toFixed(3)}</td>
+                                        ))}
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <div className="card mt-2 mb-4">
+                                <div className="card-body">
+                                    <ResponsiveContainer minHeight={300}>
+                                        <LineChart data={this.state.history}>
+                                            <XAxis dataKey="date"/>
+                                            <YAxis/>
+                                            <Tooltip/>
+                                            <Legend />
+                                            <CartesianGrid stroke="#eee" strokeDasharray="5 5"/>
+                                            <Line type="monotone" dataKey={this.state.repos[0].name} stroke="#8884d8" />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <div className="card mb-4">
+                                <div className="card-body">
+                                    <ResponsiveContainer minHeight={300}>
+                                        <LineChart data={this.state.history}>
+                                            <XAxis dataKey="date"/>
+                                            <YAxis/>
+                                            <Tooltip/>
+                                            <Legend />
+                                            <CartesianGrid stroke="#eee" strokeDasharray="5 5"/>
+                                            <Line type="monotone" dataKey={this.state.repos[1].name} stroke="#82ca9d" />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 )}

@@ -32,14 +32,13 @@ def repository(name1, name2):
         mongo.store_score(repositories[1]["name"], repositories[1]['score'])
         averages.update(mongo.scores_average())
         averages = {k:float('{0:.2f}'.format(v)) if isinstance(v, (int, float)) else v for k,v in averages.items()}
-
-        histRepo1 = mongo.get_history(repositories[0]["name"])
-        histRepo2 = mongo.get_history(repositories[1]["name"])
+        history = mongo.get_history(repositories[0]["name"]) + mongo.get_history(repositories[1]["name"])
 
         results = {
             'repositories': repositories,
             'suggestions': mongo.get_related(name1, name2),
-            'averages': averages
+            'averages': averages,
+            'history': history
         }
         return jsonify(**{'error': False, 'message': 'success', 'results': results })
     except Exception as e:

@@ -55,7 +55,7 @@ class Mongoloide:
 
     def get_history(self, name):
         comp = self.comparisons.find_one({"repo_name":name })
-        return {key.strftime("%Y-%m-%d %H:%M:%S"): value for (value, key) in comp["history"]}
+        return [{ 'date': key.strftime("%Y-%m-%d %H:%M:%S"), name: value } for (value, key) in comp["history"]]
 
     def get_user(self, name):
         return self.users.find_one({"user_name":name})
