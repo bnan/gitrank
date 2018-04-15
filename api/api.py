@@ -26,6 +26,7 @@ def repository(name1, name2):
         mongo.store_repo(repositories[0]["name"], repositories[0])
         mongo.store_repo(repositories[1]["name"], repositories[1])
         averages = mongo.repos_average()
+        averages = {k:round(v) if isinstance(v, (int, float)) else v for k,v in averages.items()}
         repositories[0]['score']  = github.calc_repository_rank(repositories[0], averages)
         repositories[1]['score']  = github.calc_repository_rank(repositories[1], averages)
         results = {
