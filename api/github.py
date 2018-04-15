@@ -56,7 +56,7 @@ def get_users(user1, user2):
         pullMerged:pullRequests(states:MERGED) {
           totalCount
         }
-        repositories(privacy: PUBLIC) {
+        repositories(privacy: PUBLIC, affiliations: OWNER) {
           totalCount
         }
         repositoriesContributedTo(privacy: PUBLIC) {

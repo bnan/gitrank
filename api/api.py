@@ -18,11 +18,11 @@ def user(username1, username2):
 
 @app.route('/api/v1/repository/<name1>/<name2>/', methods=['GET'])
 def repository(name1, name2):
-    mongo.add_comparison(name1, name2)
     try:
         user1, repo1 = name1.split('.')
         user2, repo2 = name2.split('.')
         repositories = github.get_repositories(user1, repo1, user2, repo2)
+        mongo.add_comparison(repositories[0]["name"], repositories[1]["name"])
         mongo.store_repo(repositories[0]["name"], repositories[0])
         mongo.store_repo(repositories[1]["name"], repositories[1])
         averages = mongo.repos_average()
@@ -32,6 +32,10 @@ def repository(name1, name2):
         mongo.store_score(repositories[1]["name"], repositories[1]['score'])
         averages.update(mongo.scores_average())
         averages = {k:float('{0:.2f}'.format(v)) if isinstance(v, (int, float)) else v for k,v in averages.items()}
+
+        histRepo1 = mongo.get_history(repositories[0]["name"])
+        histRepo2 = mongo.get_history(repositories[1]["name"])
+
         results = {
             'repositories': repositories,
             'suggestions': mongo.get_related(name1, name2),
