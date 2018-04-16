@@ -4,14 +4,6 @@ import './App.css'
 
 const API_URL = 'http://localhost:1337/api/v1'
 
-function merge(a) {
-    let m = []
-    a.forEach((e, i) => {
-      m.push(Object.assign({}, e, a[i]));
-    })
-    return m
-}
-
 class App extends Component {
     constructor(props) {
         super(props)
@@ -19,7 +11,8 @@ class App extends Component {
             users: [],
             repos: [],
             suggestions: [],
-            history: [],
+            history1: [],
+            history2: [],
             repo1: null,
             repo2: null,
             user1: null,
@@ -95,22 +88,22 @@ class App extends Component {
     async handleRepoCompare(e) {
         e.preventDefault()
         if (!this.state.repo1 || !this.state.repo2) {
-            this.setState({ history: [], users: [], repos: [], suggestions: [], averages: [], error: true, loading: false })
+            this.setState({ history1: [], history2: [], users: [], repos: [], suggestions: [], averages: [], error: true, loading: false })
         } else {
-            this.setState({ history: [], users: [], repos: [], suggestions: [], averages: [], error: false, loading: true })
+            this.setState({ history1: [], history2: [], users: [], repos: [], suggestions: [], averages: [], error: false, loading: true })
             let results = await this.getRepositories(this.state.repo1, this.state.repo2)
-            this.setState({ history: merge(results['history']), users: [], repos: results['repositories'], suggestions: results['suggestions'], averages: results['averages'] })
+            this.setState({ history1: results['history1'], history2: results['history2'], users: [], repos: results['repositories'], suggestions: results['suggestions'], averages: results['averages'] })
         }
     }
 
     async handleUserCompare(e) {
         e.preventDefault()
         if (!this.state.user1 || !this.state.user2) {
-            this.setState({ history: [], users: [], repos: [], suggestions: [], averages: [], error: true, loading: false })
+            this.setState({ history1: [], history2: [], users: [], repos: [], suggestions: [], averages: [], error: true, loading: false })
         } else {
-            this.setState({ history: [], users: [], repos: [], suggestions: [], averages: [], error: false, loading: true})
+            this.setState({ history1: [], history2: [], users: [], repos: [], suggestions: [], averages: [], error: false, loading: true})
             let users = await this.getUsers(this.state.user1, this.state.user2)
-            this.setState({ history: [], users: users, repos: [], suggestions: [], averages: [] })
+            this.setState({ history1: [], history2: [], users: users, repos: [], suggestions: [], averages: [] })
         }
     }
 
@@ -441,7 +434,7 @@ class App extends Component {
                             <div className="card mt-2 mb-4">
                                 <div className="card-body">
                                     <ResponsiveContainer minHeight={300}>
-                                        <LineChart data={this.state.history}>
+                                        <LineChart data={this.state.history1}>
                                             <XAxis dataKey="date"/>
                                             <YAxis/>
                                             <Tooltip/>
@@ -457,10 +450,10 @@ class App extends Component {
 
                     <div className="row">
                         <div className="col-sm-12">
-                            <div className="card mb-4">
+                            <div className="card mt-2 mb-4">
                                 <div className="card-body">
                                     <ResponsiveContainer minHeight={300}>
-                                        <LineChart data={this.state.history}>
+                                        <LineChart data={this.state.history2}>
                                             <XAxis dataKey="date"/>
                                             <YAxis/>
                                             <Tooltip/>
